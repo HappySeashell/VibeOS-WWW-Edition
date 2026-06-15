@@ -1,0 +1,3767 @@
+```
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeOS - AI Hallucinated OS</title>
+    <style id="system-components">
+        /* ========================================================= */
+        /* VibeOS Design Tokens & 视觉规范                             */
+        /* ========================================================= */
+        :root {
+            /* 颜色 (Colors) */
+            --color-primary: #0058e6;
+            --color-primary-hover: #3a93ff;
+            --color-success: #229928;
+            --color-warning: #e68a00;
+            --color-danger: #d90000;
+            --color-bg-base: #3a6ea5;
+            /* 桌面背景 */
+            --color-bg-surface: #ece9d8;
+            /* 窗口背景 */
+            --color-bg-elevated: #ffffff;
+            /* 菜单/内容区背景 */
+            --color-taskbar: linear-gradient(to bottom, #245edb 0%, #3f8cf3 9%, #245edb 18%, #245edb 92%, #333 100%);
+            --color-window-title: linear-gradient(to right, #0058e6 0%, #3a93ff 100%);
+            --color-text-base: #000000;
+            --color-text-muted: #808080;
+            --color-border: #7f9db9;
+
+            /* 尺寸与间距 (Spacing) */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 12px;
+            --space-lg: 16px;
+
+            /* 控件尺寸 (Control Sizes) */
+            --size-xs: 20px;
+            --size-sm: 24px;
+            --size-md: 28px;
+            --size-lg: 32px;
+            --size-xl: 80px;
+            --size-2xl: 200px;
+            --size-3xl: 350px;
+
+            /* 排版 (Typography) */
+            --font-sans: Tahoma, "Microsoft YaHei", SimSun, sans-serif;
+            --text-xs: 11px;
+            --text-sm: 12px;
+            --text-base: 13px;
+            --text-lg: 18px;
+
+            /* 形态与阴影 (Shape & Shadow) */
+            --radius-sm: 2px;
+            --radius-md: 3px;
+            --radius-window: 5px 5px 0 0;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+            --shadow-md: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            --shadow-window: 2px 2px 10px rgba(0, 0, 0, 0.5);
+
+
+            /* 动效 (Motion) */
+            --transition-base: 0.2s ease;
+
+            /* 宏观布局与层级 (系统保护，禁止 AI 修改) */
+            --layout-taskbar-height: 40px;
+            --z-taskbar: 9999;
+            --z-menu: 10000;
+            --z-notification: 10001;
+        }
+
+        /* 全局排版 */
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            font-family: var(--font-sans);
+            background: #222;
+            font-size: var(--text-xs);
+            color: var(--color-text-base);
+        }
+
+        /* OS 沉浸式沙盒容器 */
+        #os-container {
+            width: 100%;
+            height: 650px;
+            min-height: 400px;
+            resize: vertical;
+            overflow: hidden;
+            background: var(--color-bg-base);
+            position: relative;
+            user-select: none;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 桌面与任务栏 (基础结构) */
+        #desktop {
+            width: 100%;
+            height: calc(100% - var(--layout-taskbar-height));
+            position: relative;
+        }
+
+        #taskbar {
+            height: var(--layout-taskbar-height);
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            z-index: var(--z-taskbar);
+        }
+
+        #taskbar-apps {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .btn-start {
+            font-weight: bold;
+            font-style: italic;
+            padding: 5px 15px;
+            margin-right: 10px;
+            cursor: pointer;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            border: 1px solid transparent;
+        }
+
+        #start-menu {
+            position: absolute;
+            bottom: var(--layout-taskbar-height);
+            left: 0;
+            width: 250px;
+            display: none;
+            z-index: var(--z-menu);
+            flex-direction: column;
+            border: 1px solid transparent;
+        }
+
+        .start-menu-item {
+            padding: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: var(--transition-base);
+        }
+
+        /* 任务栏页签样式 (基础结构) */
+        .taskbar-item {
+            padding: 4px 10px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: var(--text-sm);
+            max-width: 150px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            border: 1px solid transparent;
+            transition: var(--transition-base);
+        }
+
+        /* 窗口容器 (基础结构) */
+        .window {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            min-width: 300px;
+            min-height: 200px;
+            max-width: 90vw;
+            max-height: 80vh;
+            overflow: hidden;
+            resize: both;
+            transition: box-shadow var(--transition-base);
+            border: 1px solid transparent;
+        }
+
+        .window.maximized {
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: calc(100% - var(--layout-taskbar-height)) !important;
+            max-width: none;
+            max-height: none;
+            border: none;
+            border-radius: 0;
+            resize: none;
+        }
+
+        .window-header {
+            padding: 5px 10px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+
+        .window-title {
+            pointer-events: none;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 3px;
+        }
+
+        .window-controls button {
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: bold;
+            width: var(--size-xs);
+            height: var(--size-xs);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-sm);
+            border: 1px solid transparent;
+            transition: var(--transition-base);
+        }
+
+        .window-content {
+            flex: 1;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* ========================================================= */
+        /* AI 可用的标准组件库 (基础结构 - 所有主题共享)               */
+        /* ========================================================= */
+
+        /* 基础结构：只保留布局、边距、字体等，不包含任何颜色、渐变和阴影 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 12px;
+            height: var(--size-md);
+            box-sizing: border-box;
+            font-size: var(--text-base);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition-base);
+            border: 1px solid transparent;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .input,
+        .input,
+        .select {
+            width: 100%;
+            height: var(--size-md);
+            padding: 6px;
+            font-size: var(--text-base);
+            border-radius: var(--radius-sm);
+            box-sizing: border-box;
+            outline: none;
+            border: 1px solid transparent;
+        }
+
+        .textarea {
+            width: 100%;
+            padding: 6px;
+            font-size: var(--text-base);
+            border-radius: var(--radius-sm);
+            box-sizing: border-box;
+            outline: none;
+            border: 1px solid transparent;
+            resize: vertical;
+            min-height: var(--size-xl);
+        }
+
+        .textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .checkbox,
+        .radio {
+            margin: 0 var(--space-xs) 0 0;
+            cursor: pointer;
+        }
+
+        .label {
+            display: flex;
+            align-items: center;
+            font-size: var(--text-base);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 1px solid transparent;
+        }
+
+
+        .list-item {
+            padding: 2px 6px;
+            cursor: pointer;
+            font-size: var(--text-base);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card {
+            border-radius: var(--radius-sm);
+            padding: var(--space-sm);
+            border: 1px solid transparent;
+            overflow: hidden;
+        }
+
+        .divider {
+            height: 1px;
+            margin: 0;
+            border: none;
+        }
+
+        .h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .h2 {
+            font-size: var(--text-lg);
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .text-muted {
+            font-size: var(--text-sm);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1px 6px;
+            font-size: 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid transparent;
+        }
+
+        .img {
+            max-width: 100%;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+            display: block;
+        }
+
+        .img-round {
+            border-radius: 50%;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .progress {
+            width: 100%;
+            height: var(--size-xs);
+            border-radius: var(--radius-sm);
+            appearance: none;
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid transparent;
+            gap: var(--space-xs);
+        }
+
+        .tabs button {
+            padding: 4px 12px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            font-size: var(--text-base);
+            transition: var(--transition-base);
+        }
+
+        tool-bar,
+        status-bar,
+        app-layout,
+        split-view,
+        side-panel,
+        tab-view,
+        tree-view,
+        tool-popup {
+            box-sizing: border-box;
+        }
+
+        tool-bar {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: var(--space-xs);
+            border-bottom: 1px solid transparent;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        tool-item {
+            display: inline-flex;
+            align-items: center;
+            min-height: var(--size-md);
+            padding: 4px 8px;
+            cursor: default;
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            position: relative;
+            user-select: none;
+        }
+
+        tool-item[aria-expanded="true"] {
+            z-index: 2;
+        }
+
+        tool-popup {
+            display: none;
+            position: absolute;
+            top: calc(100% + 1px);
+            left: 0;
+            min-width: 160px;
+            padding: 2px;
+            border: 1px solid transparent;
+            box-shadow: var(--shadow-md);
+            z-index: 20;
+        }
+
+        tool-item[aria-expanded="true"] > tool-popup {
+            display: flex;
+            flex-direction: column;
+        }
+
+        tool-row {
+            display: flex;
+            align-items: center;
+            min-height: var(--size-md);
+            padding: 4px 24px 4px 8px;
+            white-space: nowrap;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        tool-divider {
+            display: block;
+            height: 1px;
+            margin: 2px 0;
+            border: none;
+        }
+
+        app-layout {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        split-view {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            overflow: hidden;
+        }
+
+        split-view[direction="vertical"] {
+            flex-direction: column;
+        }
+
+        side-panel {
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            width: 220px;
+            min-height: 0;
+            overflow: auto;
+            border-right: 1px solid transparent;
+        }
+
+        status-bar {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            min-height: var(--size-sm);
+            padding: 2px var(--space-sm);
+            border-top: 1px solid transparent;
+            font-size: var(--text-xs);
+            flex-shrink: 0;
+        }
+
+        status-field {
+            display: inline-flex;
+            align-items: center;
+            min-width: 0;
+            margin: 0;
+        }
+
+        tree-view {
+            display: block;
+            overflow: auto;
+            padding: var(--space-xs);
+        }
+
+        tree-view ul {
+            list-style: none;
+            padding-left: var(--space-md);
+            margin: 0;
+        }
+
+        tree-view li {
+            cursor: default;
+            padding: 2px 4px;
+        }
+
+        tree-view li.collapsed > ul {
+            display: none;
+        }
+
+        tab-view {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        tab-view [role="tablist"] {
+            display: flex;
+            gap: var(--space-xs);
+            flex-shrink: 0;
+            border-bottom: 1px solid transparent;
+        }
+
+        tab-view [role="tab"] {
+            min-height: var(--size-md);
+            padding: 4px 12px;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            cursor: pointer;
+        }
+
+        tab-view [role="tabpanel"] {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+        }
+
+        tab-view [role="tabpanel"][hidden] {
+            display: none;
+        }
+
+        .tabs button.active {
+            margin-bottom: -1px;
+            padding-bottom: 5px;
+        }
+
+        .fieldset {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+            margin: 0;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid transparent;
+        }
+
+        .legend {
+            font-weight: bold;
+            padding: 0 5px;
+            font-size: var(--text-base);
+        }
+
+        .settings-pane {
+            display: none;
+            flex-direction: column;
+            gap: var(--space-md);
+            flex: 1;
+        }
+
+        .settings-pane.active {
+            display: flex;
+        }
+
+        .whitespace-nowrap {
+            white-space: nowrap;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* 全局模态弹窗 (Modal) */
+        #modal-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 10005;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        dialog {
+            width: 360px;
+            max-width: min(90vw, 520px);
+            max-height: 80vh;
+            padding: 0;
+            border: 1px solid transparent;
+            border-radius: var(--radius-window);
+            box-shadow: var(--shadow-window);
+            overflow: hidden;
+            animation: popIn 0.2s ease-out;
+            pointer-events: auto;
+        }
+
+        dialog::backdrop {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .dialog-header {
+            padding: 5px 10px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: var(--text-sm);
+        }
+
+        .dialog-close {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .dialog-body {
+            padding: var(--space-md);
+            font-size: var(--text-base);
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .dialog-footer {
+            padding: var(--space-md);
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-sm);
+            border-top: 1px solid transparent;
+        }
+
+        /* 通知系统 */
+        #notification-container {
+            position: absolute;
+            bottom: 42px;
+            right: 15px;
+            z-index: var(--z-notification);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: none;
+            width: 280px;
+        }
+
+        .notification {
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            animation: popIn 0.2s ease-out;
+            border-radius: var(--radius-md);
+        }
+
+        .notification::before,
+        .notification::after {
+            content: '';
+            position: absolute;
+            border-style: solid;
+        }
+
+        .notification::before {
+            bottom: -10px;
+            right: 20px;
+            border-width: 10px 10px 0 0;
+        }
+
+        .notification::after {
+            bottom: -8px;
+            right: 21px;
+            border-width: 9px 9px 0 0;
+        }
+
+        .notify-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px 2px 10px;
+            font-weight: bold;
+            font-size: var(--text-sm);
+        }
+
+        .notify-close {
+            cursor: pointer;
+            font-size: var(--text-sm);
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .notify-body {
+            padding: 4px 10px 10px 10px;
+            font-size: var(--text-xs);
+            word-break: break-word;
+            max-height: var(--size-2xl);
+            overflow-y: auto;
+        }
+
+        .notify-fade-out {
+            animation: fadeOut 0.2s ease-out forwards;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            to {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+        }
+
+        /* ========================================================= */
+        /* 底层布局与状态类 */
+        /* ========================================================= */
+        .flex-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .flex-col {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .h-full {
+            height: 100%;
+        }
+
+        .flex-1 {
+            flex: 1;
+        }
+
+        .cursor-pointer {
+            cursor: pointer;
+        }
+
+        .flex-row-between {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-xs) 0;
+            margin-bottom: var(--space-sm);
+            gap: var(--space-sm);
+            flex-shrink: 0;
+        }
+
+        .justify-end {
+            justify-content: flex-end;
+        }
+
+        .text-break {
+            word-break: break-word;
+        }
+
+        .scroll-area {
+            max-height: var(--size-2xl);
+            overflow-y: auto;
+            border: 1px solid var(--color-border);
+            padding: var(--space-sm);
+            background: var(--color-bg-elevated);
+        }
+
+        .scroll-area-lg {
+            max-height: var(--size-3xl);
+        }
+
+
+        .status-panel {
+            padding: var(--space-lg);
+            text-align: center;
+        }
+
+        .text-danger {
+            color: var(--color-danger);
+        }
+
+        .list-item-bordered {
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+        }
+
+        .global-loading-overlay {
+
+            position: absolute;
+            top: 30px;
+            left: 0;
+            right: 0;
+            padding: 6px;
+            text-align: center;
+            font-weight: bold;
+            font-size: var(--text-sm);
+            z-index: 1000;
+            border-bottom: 1px solid transparent;
+        }
+
+        /* ========================================================= */
+        /* 默认主题皮肤 (Windows XP 拟物化)                            */
+        /* ========================================================= */
+
+        [data-theme="default"] {
+
+            /* OS 外壳 XP 皮肤 */
+            #taskbar {
+                background: var(--color-taskbar);
+                box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.3);
+            }
+
+            .btn-start {
+                background: linear-gradient(to bottom, #3c8234, #2a5925);
+                color: white;
+                border-color: #1a3818;
+                border-radius: 0 10px 10px 0;
+                box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.4);
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            }
+
+            .btn-start:active {
+                background: linear-gradient(to bottom, #2a5925, #3c8234);
+            }
+
+            #start-menu {
+                background: var(--color-bg-elevated);
+                border: 2px solid var(--color-primary);
+                border-radius: var(--radius-window);
+                box-shadow: var(--shadow-md);
+            }
+
+            .start-menu-item {
+                border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+                color: var(--color-text-base);
+            }
+
+            .start-menu-item:hover {
+                background: var(--color-primary);
+                color: white;
+            }
+
+            .taskbar-item {
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+                border-color: rgba(255, 255, 255, 0.4);
+            }
+
+            .taskbar-item:hover {
+                background: rgba(255, 255, 255, 0.3);
+            }
+
+            .taskbar-item.active {
+                background: rgba(255, 255, 255, 0.6);
+                box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.4);
+                color: var(--color-primary);
+            }
+
+            .window {
+                background: var(--color-bg-surface);
+                border: 3px solid var(--color-primary);
+                border-radius: var(--radius-window);
+                box-shadow: var(--shadow-window);
+            }
+
+            .window-header {
+                background: var(--color-window-title);
+                color: white;
+            }
+
+            .window-controls button {
+                background: var(--color-primary);
+                color: white;
+                border-color: rgba(255, 255, 255, 0.5);
+            }
+
+            .window-controls button:hover {
+                background: var(--color-primary-hover);
+            }
+
+            .window-controls button.btn-close {
+                background: var(--color-danger);
+            }
+
+            .window-content {
+                background: var(--color-bg-elevated);
+                color: var(--color-text-base);
+            }
+
+            /* 组件 XP 皮肤 */
+            .btn {
+                background: linear-gradient(to bottom, #fcfcfc, #d4d0c8);
+                border-color: #808080;
+                color: black;
+                box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.9);
+            }
+
+            .btn:active {
+                background: linear-gradient(to bottom, #c4c0b8, #e4e0d8);
+                box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.4);
+                transform: none;
+            }
+
+            .btn-primary {
+                background: linear-gradient(to bottom, #66a3e2, var(--color-primary));
+                border-color: #003399;
+                color: white;
+                box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.6);
+                text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+            }
+
+            .btn-primary:active {
+                background: linear-gradient(to bottom, var(--color-primary), #66a3e2);
+                box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.6);
+                text-shadow: none;
+            }
+
+            .btn-success {
+                background: linear-gradient(to bottom, #6bd970, var(--color-success));
+                border-color: #146618;
+                color: white;
+                box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.6);
+                text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+            }
+
+            .btn-success:active {
+                background: linear-gradient(to bottom, #1b8020, #2eb836);
+                box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.6);
+                text-shadow: none;
+            }
+
+            .btn-warning {
+                background: linear-gradient(to bottom, #ffd659, var(--color-warning));
+                border-color: #a36200;
+                color: white;
+                box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.6);
+                text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+            }
+
+            .btn-warning:active {
+                background: linear-gradient(to bottom, #b36b00, #f29900);
+                box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.6);
+                text-shadow: none;
+            }
+
+            .btn-danger {
+                background: linear-gradient(to bottom, #ff6b6b, var(--color-danger));
+                border-color: #8a0000;
+                color: white;
+                box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.6);
+                text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+            }
+
+            .btn-danger:active {
+                background: linear-gradient(to bottom, #b30000, #e60000);
+                box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.6);
+                text-shadow: none;
+            }
+
+            .input,
+            .select,
+            .textarea {
+                border-color: var(--color-border);
+                background: var(--color-bg-elevated);
+                color: var(--color-text-base);
+            }
+
+            .input:focus,
+            .select:focus,
+            .textarea:focus {
+                border-color: var(--color-primary);
+            }
+
+            .list {
+                border-color: var(--color-border);
+                background: var(--color-bg-elevated);
+            }
+
+            .list-item {
+                color: var(--color-text-base);
+                border-bottom: none;
+            }
+
+            .list-item:hover {
+                background: var(--color-primary);
+                color: white;
+            }
+
+            .card {
+                border-color: var(--color-border);
+                background: #ffffff;
+                box-shadow: none;
+            }
+
+            .divider {
+                background: var(--color-border);
+                opacity: 0.5;
+            }
+
+            .h1,
+            .text-muted {
+                color: var(--color-text-base);
+            }
+
+            .h2 {
+                color: var(--color-primary);
+            }
+
+            .text-muted {
+                color: var(--color-text-muted);
+            }
+
+            .badge {
+                background: #ffffff;
+                color: var(--color-text-base);
+                border-color: #aca899;
+                box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1);
+            }
+
+            .img {
+                border-color: var(--color-border);
+            }
+
+            .progress::-webkit-progress-bar {
+                background-color: #eee;
+                box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+            }
+
+            .progress::-webkit-progress-value {
+                background-color: var(--color-success);
+            }
+
+            .tabs {
+                border-bottom-color: var(--color-border);
+            }
+
+            .tabs button {
+                background: var(--color-bg-surface);
+                border-color: var(--color-border);
+                color: var(--color-text-base);
+            }
+
+            .tabs button.active {
+                background: var(--color-bg-elevated);
+                color: var(--color-primary);
+            }
+
+            tool-bar {
+                background: var(--color-bg-surface);
+                border-bottom-color: var(--color-border);
+            }
+
+            tool-item:hover,
+            tool-item[aria-expanded="true"] {
+                background: rgba(255, 255, 255, 0.6);
+                border-color: rgba(0, 0, 0, 0.2);
+            }
+
+            tool-popup {
+                background: var(--color-bg-elevated);
+                border-color: var(--color-border);
+            }
+
+            tool-row {
+                color: var(--color-text-base);
+            }
+
+            tool-row:hover {
+                background: var(--color-primary);
+                color: white;
+            }
+
+            tool-divider {
+                background: var(--color-border);
+                opacity: 0.5;
+            }
+
+            side-panel {
+                background: #ffffff;
+                border-right-color: var(--color-border);
+            }
+
+            status-bar {
+                background: var(--color-bg-surface);
+                border-top-color: #ffffff;
+                box-shadow: 0 -1px 0 var(--color-border);
+                color: var(--color-text-base);
+            }
+
+            tree-view {
+                background: var(--color-bg-elevated);
+                color: var(--color-text-base);
+            }
+
+            tree-view li:hover {
+                background: rgba(0, 88, 230, 0.12);
+            }
+
+            tab-view [role="tablist"] {
+                border-bottom-color: var(--color-border);
+            }
+
+            tab-view [role="tab"] {
+                background: var(--color-bg-surface);
+                border-color: var(--color-border);
+                color: var(--color-text-base);
+            }
+
+            tab-view [role="tab"][aria-selected="true"] {
+                background: var(--color-bg-elevated);
+                color: var(--color-primary);
+            }
+
+            .fieldset {
+                border: 2px groove #f0f0f0;
+            }
+
+            .legend {
+                color: var(--color-primary);
+            }
+
+            .notification {
+                background: #ffffe1;
+                border: 1px solid #000000;
+                box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+                color: #000;
+            }
+
+            .notification::before {
+                border-color: #000 transparent transparent transparent;
+            }
+
+            .notification::after {
+                border-color: #ffffe1 transparent transparent transparent;
+            }
+
+            .notify-close {
+                color: #000;
+                font-family: 'Comic Sans MS', sans-serif;
+            }
+
+            .notify-close:hover {
+                color: var(--color-danger);
+            }
+
+            .global-loading-overlay {
+                background: #ffffe1;
+                color: #000;
+                border-bottom-color: #000;
+            }
+
+            dialog {
+                background: var(--color-bg-surface);
+                border: 3px solid var(--color-primary);
+                color: var(--color-text-base);
+            }
+
+            .dialog-header {
+                background: var(--color-window-title);
+                color: white;
+            }
+
+            .dialog-body {
+                background: var(--color-bg-elevated);
+                color: var(--color-text-base);
+            }
+
+            .dialog-footer {
+                background: var(--color-bg-surface);
+                border-top-color: var(--color-border);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="os-container" data-theme="default">
+        <div id="desktop"></div>
+
+        <div id="modal-container"></div>
+
+        <div id="notification-container"></div>
+
+        <!-- 开始菜单 -->
+        <div id="start-menu">
+            <div class="start-menu-item" onclick="AppRouter.launchApp('app-search')">🔍 查找应用</div>
+            <div class="start-menu-item" onclick="AppRouter.launchApp('app-settings')">⚙️ 设置</div>
+            <div id="installed-apps-list"></div>
+        </div>
+
+        <!-- 任务栏 -->
+        <div id="taskbar">
+            <div class="btn-start" onclick="toggleStartMenu()">开始</div>
+            <div id="taskbar-apps"></div>
+        </div>
+    </div>
+
+    <!-- 预置应用模板 (不可见，仅用于复制) -->
+    <template id="tpl-app-settings">
+        <app-layout id="settings-container" style="padding: var(--space-md); overflow-y: auto; gap: var(--space-md);">
+            <div class="tabs" id="settings-tabs">
+                <button id="tab-btn-api" class="active" onclick="switchSettingsTab('api')">网络</button>
+                <button id="tab-btn-bg" onclick="switchSettingsTab('bg')">个人信息</button>
+                <button id="tab-btn-theme" onclick="switchSettingsTab('theme')">个性化</button>
+                <button id="tab-btn-apps" onclick="switchSettingsTab('apps')">应用</button>
+                <button id="tab-btn-sys" onclick="switchSettingsTab('sys')">系统</button>
+            </div>
+
+            <div class="settings-pane active" id="pane-api">
+                <fieldset class="fieldset">
+                    <legend class="legend">文本 API</legend>
+                    <div class="flex-row">
+                        <label class="whitespace-nowrap">来源:</label>
+                        <select id="config-api-mode" class="select">
+                            <option value="OPENAI">OpenAI (兼容格式)</option>
+                            <option value="GOOGLE">Google AI Studio</option>
+                            <option value="SILLYTAVERN">SillyTavern</option>
+                        </select>
+                        <label class="whitespace-nowrap">流式传输:</label>
+                        <select id="config-use-stream" class="select">
+                            <option value="false">关闭</option>
+                            <option value="true">开启</option>
+                        </select>
+                    </div>
+                    <div id="text-api-configs" class="flex-col">
+                        <input type="text" id="config-api-url" class="input" placeholder="API URL">
+                        <input type="password" id="config-api-key" class="input" placeholder="API Key">
+                        <input type="text" id="config-model" class="input" placeholder="Model">
+                    </div>
+                </fieldset>
+
+                <fieldset class="fieldset">
+                    <legend class="legend">生图 API</legend>
+                    <select id="config-img-api" class="select">
+                        <option value="MOCK">LoremFlickr</option>
+                        <option value="NOVELAI">NovelAI</option>
+                        <option value="DALLE">DALL-E (预留入口)</option>
+                    </select>
+                    <div id="img-api-configs" class="flex-col hidden">
+                        <input type="text" id="config-img-url" class="input"
+                            placeholder="URL (如: https://image.novelai.net/ai/generate-image)">
+                        <input type="password" id="config-img-key" class="input" placeholder="生图 Key">
+                        <label class="text-muted">正面提示词:</label>
+                        <textarea id="config-img-pos" class="textarea"></textarea>
+                        <label class="text-muted">负面提示词:</label>
+                        <textarea id="config-img-neg" class="textarea"></textarea>
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="settings-pane" id="pane-bg">
+                <fieldset class="fieldset">
+                    <legend class="legend">世界观</legend>
+                    <div class="flex-row">
+                        <select id="sel-worldview" class="select flex-1"
+                            onchange="SettingsManager.applySelected('worldview')"></select>
+                    </div>
+                    <textarea id="txt-worldview" class="textarea" rows="3"
+                        onchange="SettingsManager.saveEdited('worldview')" placeholder="当前无设定..."></textarea>
+                </fieldset>
+
+                <fieldset class="fieldset">
+                    <legend class="legend">主线目标</legend>
+                    <div class="flex-row">
+                        <select id="sel-mainQuest" class="select flex-1"
+                            onchange="SettingsManager.applySelected('mainQuest')"></select>
+                    </div>
+                    <textarea id="txt-mainQuest" class="textarea" rows="3"
+                        onchange="SettingsManager.saveEdited('mainQuest')" placeholder="当前无主线..."></textarea>
+                </fieldset>
+
+                <fieldset class="fieldset">
+                    <legend class="legend">用户设定</legend>
+                    <div class="flex-row">
+                        <select id="sel-userProfile" class="select flex-1"
+                            onchange="SettingsManager.applySelected('userProfile')"></select>
+                    </div>
+                    <textarea id="txt-userProfile" class="textarea" rows="3"
+                        onchange="SettingsManager.saveEdited('userProfile')" placeholder="当前无用户设定..."></textarea>
+                </fieldset>
+
+                <fieldset class="fieldset">
+                    <legend class="legend">事件记忆</legend>
+                    <div class="text-muted">AI 自动提取的系统操作关键事件，将持久保存。</div>
+                    <div class="flex-row">
+                        <button class="btn btn-primary" onclick="MemoryManager.addNew()">新增记忆</button>
+                        <button class="btn btn-danger" onclick="MemoryManager.clearAll()">清空全部</button>
+                    </div>
+                    <div id="memory-list-container" class="flex-col scroll-area">
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="settings-pane" id="pane-theme">
+                <fieldset class="fieldset">
+                    <legend class="legend">主题生成</legend>
+                    <div class="flex-row">
+                        <input type="text" id="config-theme-prompt" class="input" placeholder="请描述你想要的系统主题，如: Mac OS风格">
+                        <button id="btn-gen-theme" class="btn btn-primary"
+                            onclick="ThemeManager.generateAITheme(event)">生成</button>
+                    </div>
+                </fieldset>
+
+                <fieldset class="fieldset">
+                    <legend class="legend">主题管理</legend>
+                    <div class="flex-row-between">
+                        <select id="theme-selector" class="select flex-1"
+                            onchange="ThemeManager.applySelected()"></select>
+                        <button class="btn btn-primary" onclick="ThemeManager.createNew()">新增</button>
+                        <button class="btn btn-danger" onclick="ThemeManager.deleteCurrent()">删除</button>
+                    </div>
+                    <label class="text-muted">自定义 CSS 代码:</label>
+                    <textarea id="theme-css-editor" class="textarea" rows="8"
+                        onchange="ThemeManager.saveEdited()"></textarea>
+                </fieldset>
+            </div>
+
+            <div class="settings-pane" id="pane-apps">
+                <fieldset class="fieldset">
+                    <legend class="legend">应用管理</legend>
+                    <input type="text" id="app-manage-search" class="input" placeholder="输入名称或描述以搜索已安装的应用..."
+                        oninput="UIManager.renderAppManagementList(this.value)">
+                    <div id="app-management-list" class="flex-col scroll-area scroll-area-lg">
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="settings-pane" id="pane-sys">
+                <fieldset class="fieldset">
+                    <legend class="legend">系统与重置</legend>
+                    <div class="flex-col">
+                        <div>
+                            <button class="btn btn-danger" onclick="clearAllCacheAndReset()">恢复出厂设置</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </app-layout>
+    </template>
+
+<template id="tpl-app-search">
+        <app-layout id="search-container" style="padding: var(--space-md); overflow-y: auto; gap: var(--space-md);">
+            <div class="h2">查找应用</div>
+            <div class="text-muted">请输入名称进行搜索，系统将根据您所输入的名称，为您找到相应的应用程序。</div>
+            <div class="flex-row">
+                <input type="text" id="app-search-input" class="input" placeholder="例如: 浏览器">
+                <button id="btn-do-search" class="btn btn-primary" onclick="doAppSearch()">搜索</button>
+            </div>
+            <div id="search-results" class="flex-col"></div>
+        </app-layout>
+    </template>
+
+    <template id="tpl-os-window">
+        <div class="window">
+            <div class="window-header">
+                <span class="window-title"></span>
+                <div class="window-controls">
+                    <button class="btn-min">_</button>
+                    <button class="btn-max">□</button>
+                    <button class="btn-close">X</button>
+                </div>
+            </div>
+            <div class="window-content"></div>
+        </div>
+    </template>
+
+    <script>
+        /**
+         * 模块 1: 基础工具类
+         */
+        const Utils = {
+            generateUUID: () => 'id-' + Math.random().toString(36).substr(2, 9),
+            parseDOM: (htmlString) => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(`<body>${htmlString}</body>`, 'text/html');
+                return Array.from(doc.body.children);
+            },
+            debounce: (func, wait) => {
+                let timeout;
+                return function (...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            },
+            hashPrompt: (str) => {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                return 'img_' + (hash >>> 0);
+            },
+            // [核心] 快照净化器：抹除所有的 Blob URL，只留干净的 DOM 结构给 AI 和存储
+            getPurifiedHTML: (container) => {
+                const clone = container.cloneNode(true);
+                const images = clone.querySelectorAll('img');
+                images.forEach(img => {
+                    if (img.hasAttribute('data-prompt') || img.hasAttribute('data-failed-prompt')) {
+                        img.setAttribute('src', '');
+                    }
+                });
+                return clone.innerHTML;
+            }
+        };
+
+        /**
+         * 模块 2: 统一存储管理器 (StorageManager) - 双子系统架构
+         */
+        const StorageManager = {
+            // 子系统 1: 同步配置存储 (LocalStorage)
+            Sync: {
+                load(key, defaultValue) {
+                    const saved = localStorage.getItem(key);
+                    return saved ? JSON.parse(saved) : defaultValue;
+                },
+                save(key, value) {
+                    try {
+                        localStorage.setItem(key, JSON.stringify(value));
+                    } catch (e) {
+                        console.warn(`Storage limit exceeded for ${key}`);
+                    }
+                },
+                remove(key) {
+                    localStorage.removeItem(key);
+                },
+                clearData(keys) {
+                    if (!Array.isArray(keys)) return;
+                    keys.forEach(key => this.remove(key));
+                }
+            },
+
+            // 子系统 2: 异步瞬态图像缓存 (IndexedDB)
+            BlobCache: {
+                dbName: 'VibeOS_ImageCache',
+                storeName: 'blobs',
+                db: null,
+                async init() {
+                    if (this.db) return this.db;
+                    return new Promise((resolve, reject) => {
+                        const req = indexedDB.open(this.dbName, 1);
+                        req.onupgradeneeded = (e) => {
+                            const db = e.target.result;
+                            if (!db.objectStoreNames.contains(this.storeName)) db.createObjectStore(this.storeName);
+                        };
+                        req.onsuccess = (e) => { this.db = e.target.result; resolve(this.db); };
+                        req.onerror = (e) => reject(e);
+                    });
+                },
+                async put(cacheKey, blob) {
+                    await this.init();
+                    return new Promise((resolve) => {
+                        const tx = this.db.transaction([this.storeName], 'readwrite');
+                        tx.objectStore(this.storeName).put(blob, cacheKey).onsuccess = () => resolve();
+                    });
+                },
+                async get(cacheKey) {
+                    await this.init();
+                    return new Promise((resolve) => {
+                        const tx = this.db.transaction([this.storeName], 'readonly');
+                        const req = tx.objectStore(this.storeName).get(cacheKey);
+                        req.onsuccess = () => resolve(req.result);
+                        req.onerror = () => resolve(null);
+                    });
+                },
+                async gc(activeKeys) {
+                    await this.init();
+                    return new Promise((resolve) => {
+                        const tx = this.db.transaction([this.storeName], 'readwrite');
+                        const store = tx.objectStore(this.storeName);
+                        const req = store.getAllKeys();
+                        req.onsuccess = () => {
+                            const keys = req.result;
+                            keys.forEach(key => {
+                                // 垃圾回收：如果图片不在屏幕的 activeKeys 里，直接抹杀释放空间
+                                if (!activeKeys.includes(key)) store.delete(key);
+                            });
+                            resolve();
+                        };
+                    });
+                },
+                async clearAll() {
+                    await this.init();
+                    return new Promise((resolve) => {
+                        const tx = this.db.transaction([this.storeName], 'readwrite');
+                        tx.objectStore(this.storeName).clear().onsuccess = () => resolve();
+                    });
+                }
+            }
+        };
+
+        /**
+ * 模块 3: 全局配置中心与主题管理 (纯数据树)
+ */
+        const Config = {
+            StorageKeys: [
+                'vibe_config', 'vibe_memory', 'vibe_current_theme',
+                'vibe_custom_themes', 'vibe_registry', 'vibe_sessions', 'vibe_user_settings'
+            ],
+            UIBindings: [
+                { id: 'config-api-mode', section: 'LLM', key: 'apiMode', default: 'OPENAI' },
+                { id: 'config-use-stream', section: 'LLM', key: 'useStreaming', type: 'boolean', default: false },
+                { id: 'config-api-url', section: 'LLM', key: 'url', default: '' },
+                { id: 'config-api-key', section: 'LLM', key: 'key', default: '' },
+                { id: 'config-model', section: 'LLM', key: 'model', default: '' },
+                { id: 'config-img-api', section: 'Image', key: 'imgApi', default: 'MOCK' },
+                { id: 'config-img-url', section: 'Image', key: 'imgUrl', default: '' },
+                { id: 'config-img-key', section: 'Image', key: 'imgKey', default: '' },
+                { id: 'config-img-pos', section: 'Image', key: 'imgPos', default: '' },
+                { id: 'config-img-neg', section: 'Image', key: 'imgNeg', default: '' }
+            ],
+            LLM: {
+                apiMode: 'OPENAI',
+                useStreaming: false,
+                url: '',
+                key: '',
+                model: 'gpt-4o'
+            },
+            Image: {
+                imgApi: 'MOCK',
+                imgUrl: '',
+                imgKey: '',
+                imgPos: 'masterpiece, best quality, highly detailed',
+                imgNeg: 'lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, female, girl, breasts, child, loli, shota, modern clothing, western, deformed'
+            },
+            System: {
+                searchResultCount: 6,
+                SETTING_TEMPLATES: {
+                    worldview: {
+                        '无': '',
+                        '现代日常': '背景基于现代社会，但可以有趣一些。无论用户操作或输入什么内容，甚至是看似有点荒诞的内容，都要照单全收。例如，如果用户在搜索框里输入“古埃及的微软”，应用的搜索结果应该包含相应内容，就好像微软确实曾经涉足古埃及一样。然而，除了根据用户的输入即兴发挥外，你不应该自己编造笑料。如果用户的行为并不搞笑，那么就保持正常。你可以包含怪异或超现实的内容，但不要单纯为了搞笑而这么做。',
+                        '蒸汽朋克': '背景基于复古的蒸汽朋克社会。用户是在与运行在一台差分机上的操作系统进行交互，生成内容需要符合该背景设定。',
+                        '赛博朋克': '背景基于未来的赛博朋克社会。用户是在与最高端的操作系统进行交互，生成内容需要符合该背景设定。',
+                        '自定义': ''
+                    },
+                    mainQuest: {
+                        '无': '',
+                        '推理探案': '目标是通过大量的检索、收集，拼凑碎片化的信息，在看似不相干的线索之间找到关联，最终找到一桩上周发生的凶杀案的嫌疑人的真实身份以及下落。推理应当循序渐进。',
+                        '寻找过去': '目标是通过提供只言片语的碎片化信息，拼凑和自己有关的过去，最终找到自己的回忆，推理应当循序渐进。',
+                        '交友恋爱': '在网上冲浪的过程中，遇见同道中人乃至真心以待的爱人。',
+                        '自定义': ''
+                    },
+                    userProfile: {
+                        '无': '',
+                        '普通阿宅': '用户是一名平平无奇的阿宅，性格非常老好人，不懂得拒绝别人，最大的优点是亚撒西，拥有幸运色狼buff。',
+                        '铁血佣兵': '用户是一名超高校级的雇佣兵，人狠话不多，办事效率特高特利索，不喜欢拖泥带水。',
+                        '失忆之人': '用户失去了记忆，仅凭本能探索世界。',
+                        '自定义': ''
+                    }
+                },
+                systemApps: {
+                    'app-settings': { name: '设置', icon: '⚙️', templateId: 'tpl-app-settings', publisher: 'VibeOS System' },
+                    'app-search': { name: '查找应用', icon: '🔍', templateId: 'tpl-app-search', publisher: 'VibeOS System' }
+                },
+                allowedUIClasses: [
+                    { tag: 'button', classes: ['.btn', '.btn-primary', '.btn-success', '.btn-warning', '.btn-danger'], desc: '按钮及各类语义化状态' },
+                    { tag: 'input', classes: ['.input', '.checkbox', '.radio'], desc: '文本输入框、复选框、单选框' },
+                    { tag: 'textarea', classes: ['.textarea'], desc: '多行文本输入框' },
+                    { tag: 'select', classes: ['.select'], desc: '下拉选择框' },
+                    { tag: 'label', classes: ['.label'], desc: '表单标签' },
+                    { tag: 'tool-bar', classes: [], desc: '应用顶部工具栏/菜单栏，位于 app-layout 外，可包含 button、tool-item' },
+                    { tag: 'tool-item', classes: [], desc: '工具栏下拉菜单项，可包含 tool-popup' },
+                    { tag: 'tool-popup', classes: [], desc: 'tool-item 内部下拉菜单容器，展开/关闭由系统预置行为处理' },
+                    { tag: 'tool-row', classes: [], desc: '下拉菜单命令行，可点击，必须有唯一 id' },
+                    { tag: 'tool-divider', classes: [], desc: '下拉菜单分隔线，无外边距' },
+                    { tag: 'app-layout', classes: [], desc: '应用主内容区，位于 tool-bar 与 status-bar 之间，预置 flex:1、纵向布局和 overflow hidden' },
+                    { tag: 'split-view', classes: [], desc: '分栏布局容器，可用 direction="vertical" 表示上下分栏' },
+                    { tag: 'side-panel', classes: [], desc: '侧边栏/导航树容器' },
+                    { tag: 'status-bar', classes: [], desc: '应用底部状态栏，位于 app-layout 外' },
+                    { tag: 'status-field', classes: [], desc: '状态栏字段' },
+                    { tag: 'tree-view', classes: [], desc: '树状菜单，展开/折叠由系统预置行为处理' },
+                    { tag: 'tab-view', classes: [], desc: '标签页容器，支持 role=tablist/tab/tabpanel 自动切换' },
+                    { tag: 'dialog', classes: [], desc: '应用内弹窗，系统会自动打开并处理底部确认/取消行为' },
+                    { tag: 'ul/ol/div', classes: ['.list'], desc: '列表外层容器' },
+                    { tag: 'li/div', classes: ['.list-item', '.list-item-bordered'], desc: '列表项（带边框修饰）' },
+                    { tag: 'div', classes: ['.card'], desc: '独立卡片容器' },
+                    { tag: 'hr/div', classes: ['.divider'], desc: '分割线' },
+                    { tag: 'h1/div', classes: ['.h1'], desc: '一级大标题' },
+                    { tag: 'h2/div', classes: ['.h2'], desc: '二级小标题' },
+                    { tag: 'span/div', classes: ['.text-muted', '.text-danger', '.text-break'], desc: '文本状态修饰（置灰、警告、强制换行）' },
+                    { tag: 'span/div', classes: ['.badge'], desc: '提示徽章/小标签' },
+                    { tag: 'img', classes: ['.img', '.img-round'], desc: '图片（img-round用于圆形图片）' },
+                    { tag: 'progress', classes: ['.progress'], desc: '进度条' },
+                    { tag: 'div', classes: ['.scroll-area', '.scroll-area-lg'], desc: '带内部滚动条的容器面板' },
+                    { tag: 'div', classes: ['.status-panel'], desc: '居中的状态或空数据提示面板' }
+                ],
+                allowedThemeTokens: [
+                    '--color-primary', '--color-primary-hover', '--color-success', '--color-warning', '--color-danger',
+                    '--color-bg-base', '--color-bg-surface', '--color-bg-elevated', '--color-taskbar', '--color-window-title',
+                    '--color-text-base', '--color-text-muted', '--color-border',
+                    '--space-xs', '--space-sm', '--space-md', '--space-lg',
+                    '--font-sans', '--text-xs', '--text-sm', '--text-base', '--text-lg',
+                    '--radius-sm', '--radius-md', '--radius-window',
+                    '--shadow-sm', '--shadow-md', '--shadow-window',
+                    '--transition-base', '--window-border'
+                ],
+                allowedThemeSelectors: [
+                    { selector: '#desktop', desc: '桌面背景容器' },
+                    { selector: '#taskbar', desc: '底部任务栏容器' },
+                    { selector: '#taskbar-apps', desc: '任务栏中存放已打开应用标签的容器' },
+                    { selector: '.taskbar-item', desc: '任务栏上的单个应用标签' },
+                    { selector: '.btn-start', desc: '开始按钮' },
+                    { selector: '#start-menu', desc: '开始菜单面板' },
+                    { selector: '.start-menu-item', desc: '开始菜单中的选项' },
+                    { selector: '.window', desc: '应用窗口外壳' },
+                    { selector: '.window-header', desc: '窗口顶部标题栏' },
+                    { selector: '.window-title', desc: '窗口标题文字' },
+                    { selector: '.window-controls', desc: '窗口右上角控制按钮组的容器' },
+                    { selector: '.window-controls button', desc: '最小化/最大化/关闭按钮' },
+                    { selector: '.fieldset', desc: '设置面板的分组外框容器' },
+                    { selector: '.legend', desc: '设置面板的分组标题' },
+                    { selector: '.notification', desc: '系统通知气泡容器' },
+                    { selector: '.notify-header, .notify-body, .notify-close', desc: '通知气泡的内部排版元素' },
+                    { selector: 'dialog', desc: '原生弹窗外壳' },
+                    { selector: 'dialog::backdrop', desc: '原生弹窗遮罩' },
+                    { selector: '.dialog-header, .dialog-body, .dialog-footer', desc: '弹窗内部的头部、内容区和底部按钮控制区' },
+                    { selector: 'tool-bar', desc: 'AI应用顶部工具栏/菜单栏' },
+                    { selector: 'tool-item', desc: '工具栏菜单项' },
+                    { selector: 'tool-popup', desc: '工具栏下拉菜单' },
+                    { selector: 'tool-row', desc: '工具栏下拉菜单命令行' },
+                    { selector: 'tool-divider', desc: '工具栏下拉菜单分隔线' },
+                    { selector: 'app-layout', desc: 'AI应用主内容区' },
+                    { selector: 'split-view', desc: 'AI应用分栏布局' },
+                    { selector: 'side-panel', desc: 'AI应用侧边栏' },
+                    { selector: 'status-bar', desc: 'AI应用底部状态栏' },
+                    { selector: 'status-field', desc: 'AI应用状态栏字段' },
+                    { selector: 'tree-view', desc: 'AI应用树状菜单' },
+                    { selector: 'tab-view', desc: 'AI应用标签页容器' },
+                    { selector: '.scroll-area', desc: '带有内滚动的面板容器' },
+                    { selector: '.status-panel', desc: '系统状态/空状态文本框' },
+                    { selector: '.list-item-bordered', desc: '带边框的独立列表项/搜索结果卡片' },
+                    { selector: '.btn' },
+                    { selector: '.btn-primary' },
+                    { selector: '.btn-success' },
+                    { selector: '.btn-warning' },
+                    { selector: '.btn-danger' },
+                    { selector: '.input' },
+                    { selector: '.textarea' },
+                    { selector: '.select' },
+                    { selector: '.checkbox' },
+                    { selector: '.radio' },
+                    { selector: '.label' },
+                    { selector: '.list' },
+                    { selector: '.list-item' },
+                    { selector: '.card' },
+                    { selector: '.divider' },
+                    { selector: '.h1' },
+                    { selector: '.h2' },
+                    { selector: '.text-muted' },
+                    { selector: '.badge' },
+                    { selector: '.img' },
+                    { selector: '.progress' }
+                ]
+            }
+        };
+
+        const UIManager = {
+            refreshSettingsUI() {
+                const categories = ['worldview', 'mainQuest', 'userProfile'];
+                categories.forEach(cat => {
+                    const sel = document.getElementById(`sel-${cat}`);
+                    const txt = document.getElementById(`txt-${cat}`);
+                    if (!sel || !txt) return;
+
+                    sel.innerHTML = '';
+                    for (const name in SettingsManager.state[cat].values) {
+                        const opt = document.createElement('option');
+                        opt.value = name;
+                        opt.innerText = name;
+                        if (name === SettingsManager.state[cat].current) opt.selected = true;
+                        sel.appendChild(opt);
+                    }
+                    txt.value = SettingsManager.state[cat].values[SettingsManager.state[cat].current] || '';
+                });
+            },
+
+            renderAppManagementList(keyword = '') {
+                const list = document.getElementById('app-management-list');
+                if (!list) return;
+                list.innerHTML = '';
+
+                const kw = keyword.toLowerCase().trim();
+
+                // 聚合：提取系统级应用和用户安装的应用，注入类型标识
+                const allApps = [
+                    ...Object.entries(Config.System.systemApps).map(([id, data]) => ({ id, ...data, isSystem: true })),
+                    ...Object.entries(ContextStore.registry).map(([id, data]) => ({ id, ...data, isSystem: false }))
+                ];
+
+                // 搜索过滤：匹配名称或描述
+                const filteredApps = allApps.filter(app =>
+                    app.name.toLowerCase().includes(kw) ||
+                    (app.description && app.description.toLowerCase().includes(kw))
+                );
+
+                if (filteredApps.length === 0) {
+                    list.innerHTML = '<div class="text-muted status-panel">没有找到匹配的应用</div>';
+                    return;
+                }
+
+                filteredApps.forEach(app => {
+                    const card = document.createElement('div');
+                    card.className = 'card flex-row list-item-bordered';
+
+                    const dateStr = app.createdAt ? new Date(app.createdAt).toLocaleString() : '系统预置';
+                    const publisherStr = app.publisher || '未知独立开发者';
+
+                    card.innerHTML = `
+                        <div class="flex-col flex-1">
+                            <div><strong>${app.icon || '💿'} ${app.name}</strong></div>
+                            <div class="text-muted">发行商: ${publisherStr} | 安装日期: ${dateStr}</div>
+                            ${app.description ? `<div class="text-muted">${app.description}</div>` : ''}
+                        </div>
+                        ${!app.isSystem ? `
+                        <div>
+                            <button class="btn btn-danger" onclick="ContextStore.uninstallApp('${app.id}')">卸载</button>
+                        </div>
+                        ` : ''}
+                    `;
+                    list.appendChild(card);
+                });
+            },
+
+            renderStartMenuApps() {
+                const list = document.getElementById('installed-apps-list');
+                if (!list) return;
+                list.innerHTML = '';
+                for (const [appId, data] of Object.entries(ContextStore.registry)) {
+                    const el = document.createElement('div');
+                    el.className = 'start-menu-item';
+                    const dateStr = data.createdAt ? new Date(data.createdAt).toLocaleString() : '系统预置';
+                    el.title = `发行商: ${data.publisher || '未知'}\n安装时间: ${dateStr}`;
+                    el.innerText = `${data.icon || '💿'} ${data.name}`;
+                    el.onclick = () => AppRouter.launchApp(appId);
+                    list.appendChild(el);
+                }
+            },
+
+            renderMemoryList() {
+                const container = document.getElementById('memory-list-container');
+                if (!container) return;
+                container.innerHTML = '';
+
+                if (MemoryManager.longTermMemory.length === 0) {
+                    container.innerHTML = '<div class="text-muted status-panel">暂无记忆</div>';
+                    return;
+                }
+
+                MemoryManager.longTermMemory.forEach((mem, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'card flex-col';
+                    card.innerHTML = `
+                        <div id="mem-view-${index}" class="flex-row">
+                            <div class="flex-1 text-break">${mem}</div>
+                            <button class="btn" onclick="UIManager.editMemory(${index})">编辑</button>
+                            <button class="btn btn-danger" onclick="MemoryManager.deleteItem(${index})">删除</button>
+                        </div>
+                        <div id="mem-edit-${index}" class="flex-col hidden">
+                            <textarea id="mem-input-${index}" class="textarea" rows="3">${mem}</textarea>
+                            <div class="flex-row justify-end">
+                                <button class="btn" onclick="UIManager.cancelMemory(${index})">取消</button>
+                                <button class="btn btn-success" onclick="UIManager.saveMemory(${index})">保存</button>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            },
+
+            editMemory(index) {
+                document.getElementById(`mem-view-${index}`).classList.add('hidden');
+                document.getElementById(`mem-edit-${index}`).classList.remove('hidden');
+            },
+
+            cancelMemory(index) {
+                document.getElementById(`mem-input-${index}`).value = MemoryManager.longTermMemory[index];
+                document.getElementById(`mem-view-${index}`).classList.remove('hidden');
+                document.getElementById(`mem-edit-${index}`).classList.add('hidden');
+            },
+
+            saveMemory(index) {
+                const val = document.getElementById(`mem-input-${index}`).value;
+                MemoryManager.updateItem(index, val);
+            },
+
+            refreshThemeUI() {
+                const selector = document.getElementById('theme-selector');
+                const editor = document.getElementById('theme-css-editor');
+                if (!selector || !editor) return;
+
+                selector.innerHTML = '';
+                for (const themeName in ThemeManager.themes) {
+                    const opt = document.createElement('option');
+                    opt.value = themeName;
+                    opt.innerText = themeName;
+                    if (themeName === ThemeManager.currentTheme) opt.selected = true;
+                    selector.appendChild(opt);
+                }
+                editor.value = ThemeManager.themes[ThemeManager.currentTheme] || '';
+                editor.disabled = (ThemeManager.currentTheme === 'default');
+            },
+
+            loadSettingsToUI() {
+                setTimeout(() => {
+                    const elMode = document.getElementById('config-api-mode');
+                    if (elMode) {
+                        Config.UIBindings.forEach(bind => {
+                            const el = document.getElementById(bind.id);
+                            if (el) {
+                                let val = Config[bind.section][bind.key];
+                                if (val === undefined || val === null) val = bind.default;
+                                el.value = bind.type === 'boolean' ? (val ? "true" : "false") : val;
+                            }
+                        });
+
+                        elMode.onchange = (e) => {
+                            const mode = e.target.value;
+                            const provider = APIGateway.providers[mode];
+                            const elUrl = document.getElementById('config-api-url');
+                            const elKey = document.getElementById('config-api-key');
+                            const elModel = document.getElementById('config-model');
+
+                            if (provider) {
+                                elUrl.style.display = provider.fields.includes('url') ? '' : 'none';
+                                elKey.style.display = provider.fields.includes('key') ? '' : 'none';
+                                elModel.style.display = provider.fields.includes('model') ? '' : 'none';
+
+                                if (provider.fields.includes('url') && !elUrl.value && provider.defaultUrl) {
+                                    elUrl.value = provider.defaultUrl;
+                                }
+                                if (provider.fields.includes('model') && !elModel.value && provider.defaultModel) {
+                                    elModel.value = provider.defaultModel;
+                                }
+                            }
+                        };
+                        elMode.onchange({ target: elMode });
+
+                        const elImgApi = document.getElementById('config-img-api');
+                        elImgApi.onchange = (e) => {
+                            const mode = e.target.value;
+                            const imgConfigs = document.getElementById('img-api-configs');
+                            const elImgUrl = document.getElementById('config-img-url');
+
+                            if (mode === 'NOVELAI' || mode === 'DALLE') {
+                                imgConfigs.classList.remove('hidden');
+                                const provider = ImageService.providers[mode];
+                                if (provider && provider.defaultUrl && !elImgUrl.value) {
+                                    elImgUrl.value = provider.defaultUrl;
+                                }
+                            } else {
+                                imgConfigs.classList.add('hidden');
+                            }
+                        };
+                        elImgApi.onchange({ target: elImgApi });
+
+                        this.renderMemoryList();
+                        this.refreshThemeUI();
+                        this.refreshSettingsUI();
+                        this.renderAppManagementList();
+
+                        const autoSave = Utils.debounce(() => { saveSettings(true); }, 500);
+                        const container = document.getElementById('settings-container');
+                        container.addEventListener('input', (e) => {
+                            if (['INPUT', 'TEXTAREA'].includes(e.target.tagName) && e.target.id !== 'theme-css-editor') autoSave();
+                        });
+                        container.addEventListener('change', (e) => {
+                            if (e.target.tagName === 'SELECT' && e.target.id !== 'theme-selector') autoSave();
+                        });
+                    }
+                }, 100);
+            },
+
+            async handleImageHydration(appId, container) {
+                // [架构修正] 收集全系统的活跃图片，不能只看当前屏幕，还要看所有后台挂起/关闭的应用快照！
+                const activeKeys = new Set();
+
+                // 1. 扫描当前屏幕上存活的图片 (捕捉正在过渡、尚未写入快照的临时状态)
+                const liveImages = document.getElementById('os-container').querySelectorAll('img');
+                for (const img of liveImages) {
+                    const prompt = img.getAttribute('data-prompt') || img.getAttribute('data-failed-prompt');
+                    if (img.id && prompt) activeKeys.add(Utils.hashPrompt(img.id + '|' + prompt));
+                }
+
+                // 2. 扫描休眠在 ContextStore 快照中的图片 (真正的持久化防线)
+                for (const id in ContextStore.sessions) {
+                    const session = ContextStore.sessions[id];
+                    if (session && session.htmlSnapshot) {
+                        // 使用一个临时 div 解析字符串快照，性能极高，不会渲染到屏幕上
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = session.htmlSnapshot;
+                        const snapImages = tempDiv.querySelectorAll('img');
+                        for (const img of snapImages) {
+                            const prompt = img.getAttribute('data-prompt') || img.getAttribute('data-failed-prompt');
+                            if (img.id && prompt) activeKeys.add(Utils.hashPrompt(img.id + '|' + prompt));
+                        }
+                    }
+                }
+
+                // 3. 触发静默 GC，真正只有从 AI 的 UI 树中彻底消失的死图，才会被释放存储
+                StorageManager.BlobCache.gc(Array.from(activeKeys));
+
+                // ======== 下方是图片挂载逻辑 ========
+                const appImages = container.querySelectorAll('img[data-prompt]');
+                if (appImages.length === 0) return;
+
+                for (const img of appImages) {
+                    const prompt = img.getAttribute('data-prompt');
+                    if (!img.id) continue;
+
+                    const cacheKey = Utils.hashPrompt(img.id + '|' + prompt);
+                    const cachedBlob = await StorageManager.BlobCache.get(cacheKey);
+
+                    if (cachedBlob) {
+                        const currentSrc = img.getAttribute('src');
+                        if (currentSrc && currentSrc.startsWith('blob:')) {
+                            URL.revokeObjectURL(currentSrc);
+                        }
+
+                        img.src = URL.createObjectURL(cachedBlob);
+                        img.classList.remove('cursor-pointer');
+                    } else {
+                        const srcAttr = img.getAttribute('src');
+                        if (!srcAttr || srcAttr.startsWith('data:image/svg')) {
+                            img.src = ImageService._createFallbackSVG('准备排队...');
+                            AIScheduler.enqueueImage(appId, container, img, prompt, TASK_PRIORITY.NORMAL);
+                        }
+                    }
+                }
+            }
+        };
+
+        const SettingsManager = {
+            state: {
+                worldview: { current: '无', values: {} },
+                mainQuest: { current: '无', values: {} },
+                userProfile: { current: '无', values: {} }
+            },
+
+            init() {
+                const saved = StorageManager.Sync.load('vibe_user_settings', null);
+                const categories = ['worldview', 'mainQuest', 'userProfile'];
+
+                categories.forEach(cat => {
+                    // 初始化深拷贝，防止污染 Config 常量
+                    this.state[cat].values = { ...Config.System.SETTING_TEMPLATES[cat] };
+
+                    if (saved && saved[cat]) {
+                        this.state[cat].current = saved[cat].current || '无';
+                        // 合并保存的用户修改（即使用户改了预设内容，也覆盖上来）
+                        Object.assign(this.state[cat].values, saved[cat].values);
+                    }
+                });
+            },
+
+            save() {
+                StorageManager.Sync.save('vibe_user_settings', this.state);
+            },
+
+            applySelected(cat) {
+                const sel = document.getElementById(`sel-${cat}`);
+                const txt = document.getElementById(`txt-${cat}`);
+                if (!sel || !txt) return;
+
+                const selectedName = sel.value;
+                this.state[cat].current = selectedName;
+                txt.value = this.state[cat].values[selectedName] || '';
+                this.save();
+            },
+
+            saveEdited(cat) {
+                const txt = document.getElementById(`txt-${cat}`);
+                if (!txt) return;
+
+                const currentName = this.state[cat].current;
+                this.state[cat].values[currentName] = txt.value;
+                this.save();
+            },
+
+            getCombinedSettingString() {
+                const w = this.state.worldview.values[this.state.worldview.current];
+                const m = this.state.mainQuest.values[this.state.mainQuest.current];
+                const u = this.state.userProfile.values[this.state.userProfile.current];
+
+                let res = [];
+                if (w && w.trim()) res.push(`[世界观]\n${w}`);
+                if (m && m.trim()) res.push(`[主线目标]\n${m}`);
+                if (u && u.trim()) res.push(`[用户设定]\n${u}`);
+                return res.join('\n\n');
+            }
+        };
+
+        const ThemeManager = {
+            templateCSS: `/* ---------------------------------------------------------
+   请在此编辑您的自定义主题 CSS。
+   注意：由于您是覆盖整个 #os-container，请保留或修改下方的变量与选择器。
+--------------------------------------------------------- */
+#os-container {
+    --color-primary: #0058e6;
+    --color-primary-hover: #3a93ff;
+    --color-success: #229928;
+    --color-warning: #e68a00;
+    --color-danger: #d90000;
+    --color-bg-base: #3a6ea5;
+    --color-bg-surface: #ece9d8;
+    --color-bg-elevated: #ffffff;
+    --color-taskbar: linear-gradient(to bottom, #245edb 0%, #3f8cf3 9%, #245edb 18%, #245edb 92%, #333 100%);
+    --color-window-title: linear-gradient(to right, #0058e6 0%, #3a93ff 100%);
+    --color-text-base: #000000;
+    --color-text-muted: #808080;
+    --color-border: #7f9db9;
+
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 12px;
+    --space-lg: 16px;
+
+    --font-sans: Tahoma, "Microsoft YaHei", SimSun, sans-serif;
+    --text-xs: 11px;
+    --text-sm: 12px;
+    --text-base: 13px;
+    --text-lg: 18px;
+
+    --radius-sm: 2px;
+    --radius-md: 3px;
+    --radius-window: 5px 5px 0 0;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+    --shadow-md: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    --shadow-window: 2px 2px 10px rgba(0, 0, 0, 0.5);
+
+    --transition-base: 0.2s ease;
+}
+
+#taskbar { background: var(--color-taskbar); box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.3); }
+.btn-start { background: linear-gradient(to bottom, #3c8234, #2a5925); color: white; border-color: #1a3818; border-radius: 0 10px 10px 0; box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.4); text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); }
+.btn-start:active { background: linear-gradient(to bottom, #2a5925, #3c8234); }
+#start-menu { background: var(--color-bg-elevated); border: 2px solid var(--color-primary); border-radius: var(--radius-window); box-shadow: var(--shadow-md); }
+.start-menu-item { border-bottom: 1px solid rgba(0, 0, 0, 0.05); color: var(--color-text-base); }
+.start-menu-item:hover { background: var(--color-primary); color: white; }
+.taskbar-item { background: rgba(255, 255, 255, 0.2); color: white; border-color: rgba(255, 255, 255, 0.4); }
+.taskbar-item:hover { background: rgba(255, 255, 255, 0.3); }
+.taskbar-item.active { background: rgba(255, 255, 255, 0.6); box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.4); color: var(--color-primary); }
+.window { background: var(--color-bg-surface); border: 3px solid var(--color-primary); border-radius: var(--radius-window); box-shadow: var(--shadow-window); }
+.window-header { background: var(--color-window-title); color: white; }
+.window-controls button { background: var(--color-primary); color: white; border-color: rgba(255, 255, 255, 0.5); }
+.window-controls button:hover { background: var(--color-primary-hover); }
+.window-controls button.btn-close { background: var(--color-danger); }
+.window-content { background: var(--color-bg-elevated); color: var(--color-text-base); }
+.btn { background: linear-gradient(to bottom, #fcfcfc, #d4d0c8); border-color: #808080; color: black; box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.9); }
+.btn:active { background: linear-gradient(to bottom, #c4c0b8, #e4e0d8); box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.4); transform: none; }
+.btn-primary { background: linear-gradient(to bottom, #66a3e2, var(--color-primary)); border-color: #003399; color: white; box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.6); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4); }
+.btn-primary:active { background: linear-gradient(to bottom, var(--color-primary), #66a3e2); box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.6); text-shadow: none; }
+.btn-success { background: linear-gradient(to bottom, #6bd970, var(--color-success)); border-color: #146618; color: white; box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.6); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4); }
+.btn-success:active { background: linear-gradient(to bottom, #1b8020, #2eb836); box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.6); text-shadow: none; }
+.btn-warning { background: linear-gradient(to bottom, #ffd659, var(--color-warning)); border-color: #a36200; color: white; box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.6); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4); }
+.btn-warning:active { background: linear-gradient(to bottom, #b36b00, #f29900); box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.6); text-shadow: none; }
+.btn-danger { background: linear-gradient(to bottom, #ff6b6b, var(--color-danger)); border-color: #8a0000; color: white; box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.6); text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4); }
+.btn-danger:active { background: linear-gradient(to bottom, #b30000, #e60000); box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.6); text-shadow: none; }
+.input, .select, .textarea { border-color: var(--color-border); background: var(--color-bg-elevated); color: var(--color-text-base); }
+.input:focus, .select:focus, .textarea:focus { border-color: var(--color-primary); }
+.list { border-color: var(--color-border); background: var(--color-bg-elevated); }
+.list-item { color: var(--color-text-base); border-bottom: none; }
+.list-item:hover { background: var(--color-primary); color: white; }
+.card { border-color: var(--color-border); background: #ffffff; box-shadow: none; }
+.divider { background: var(--color-border); opacity: 0.5; }
+.h1, .text-muted { color: var(--color-text-base); }
+.h2 { color: var(--color-primary); }
+.text-muted { color: var(--color-text-muted); }
+.badge { background: #ffffff; color: var(--color-text-base); border-color: #aca899; box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.1); }
+.img { border-color: var(--color-border); }
+.progress::-webkit-progress-bar { background-color: #eee; box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1); }
+.progress::-webkit-progress-value { background-color: var(--color-success); }
+.fieldset { border: 2px groove #f0f0f0; }
+.legend { color: var(--color-primary); }
+.notification { background: #ffffe1; border: 1px solid #000000; box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2); color: #000; }
+.notification::before { border-color: #000 transparent transparent transparent; }
+.notification::after { border-color: #ffffe1 transparent transparent transparent; }
+.notify-close { color: #000; font-family: 'Comic Sans MS', sans-serif; }
+.notify-close:hover { color: var(--color-danger); }
+tool-bar { background: var(--color-bg-surface); border-bottom-color: var(--color-border); }
+tool-item:hover, tool-item[aria-expanded="true"] { background: rgba(255, 255, 255, 0.6); border-color: rgba(0, 0, 0, 0.2); }
+tool-popup { background: var(--color-bg-elevated); border-color: var(--color-border); }
+tool-row { color: var(--color-text-base); }
+tool-row:hover { background: var(--color-primary); color: white; }
+tool-divider { background: var(--color-border); opacity: 0.5; }
+side-panel { background: #ffffff; border-right-color: var(--color-border); }
+status-bar { background: var(--color-bg-surface); border-top-color: #ffffff; box-shadow: 0 -1px 0 var(--color-border); color: var(--color-text-base); }
+tree-view { background: var(--color-bg-elevated); color: var(--color-text-base); }
+tree-view li:hover { background: rgba(0, 88, 230, 0.12); }
+tab-view [role="tablist"] { border-bottom-color: var(--color-border); }
+tab-view [role="tab"] { background: var(--color-bg-surface); border-color: var(--color-border); color: var(--color-text-base); }
+tab-view [role="tab"][aria-selected="true"] { background: var(--color-bg-elevated); color: var(--color-primary); }
+.global-loading-overlay { background: #ffffe1; color: #000; border-bottom-color: #000; }
+dialog { background: var(--color-bg-surface); border: 3px solid var(--color-primary); color: var(--color-text-base); }
+.dialog-header { background: var(--color-window-title); color: white; }
+.dialog-body { background: var(--color-bg-elevated); color: var(--color-text-base); }
+.dialog-footer { background: var(--color-bg-surface); border-top-color: var(--color-border); }`,
+
+            themes: {
+                'default': '/* 默认 XP 风格，无需额外 CSS */'
+            },
+            currentTheme: 'default',
+
+            init() {
+                this.currentTheme = StorageManager.Sync.load('vibe_current_theme', 'default');
+                const savedCustom = StorageManager.Sync.load('vibe_custom_themes', {});
+                Object.assign(this.themes, savedCustom);
+                this.applyTheme(this.currentTheme);
+            },
+
+            applyTheme(themeName) {
+                if (!this.themes[themeName] && themeName !== 'default') return;
+                this.currentTheme = themeName;
+
+                const osContainer = document.getElementById('os-container');
+                if (osContainer) {
+                    osContainer.setAttribute('data-theme', themeName === 'default' ? 'default' : 'custom');
+                }
+
+                let styleTag = document.getElementById('custom-ai-theme-style');
+                if (!styleTag) {
+                    styleTag = document.createElement('style');
+                    styleTag.id = 'custom-ai-theme-style';
+                    document.head.appendChild(styleTag);
+                }
+                styleTag.innerHTML = this.themes[themeName] || '';
+                this.saveThemes();
+            },
+
+            saveThemes() {
+                StorageManager.Sync.save('vibe_current_theme', this.currentTheme);
+                const customThemes = { ...this.themes };
+                delete customThemes['default'];
+                StorageManager.Sync.save('vibe_custom_themes', customThemes);
+            },
+
+            addAndApplyTheme(name, css) {
+                this.themes[name] = css;
+                this.applyTheme(name);
+                UIManager.refreshThemeUI();
+            },
+
+            applySelected() {
+                const selector = document.getElementById('theme-selector');
+                this.applyTheme(selector.value);
+                UIManager.refreshThemeUI();
+            },
+
+            saveEdited() {
+                const editor = document.getElementById('theme-css-editor');
+                if (this.currentTheme !== 'default') {
+                    this.themes[this.currentTheme] = editor.value;
+                    this.applyTheme(this.currentTheme);
+                }
+            },
+            async createNew() {
+                const name = await ModalManager.prompt("新增主题", "请输入新主题名称：", "自定义主题" + Math.floor(Math.random() * 1000));
+                if (!name) return;
+                if (this.themes[name] !== undefined) {
+                    NotificationCenter.show({ title: '提示', message: '主题名称已存在', type: 'warning' });
+                    return;
+                }
+                this.themes[name] = this.templateCSS;
+                this.applyTheme(name);
+                UIManager.refreshThemeUI();
+            },
+
+            async deleteCurrent() {
+                if (this.currentTheme === 'default') {
+                    NotificationCenter.show({ title: '提示', message: '默认主题不可删除', type: 'warning' });
+                    return;
+                }
+                if (await ModalManager.confirm('确认删除', `确定删除主题 "${this.currentTheme}" 吗？`)) {
+                    delete this.themes[this.currentTheme];
+                    this.applyTheme('default');
+                    UIManager.refreshThemeUI();
+                }
+            },
+
+            generateAITheme(event) {
+                const prompt = document.getElementById('config-theme-prompt').value;
+                if (!prompt) {
+                    NotificationCenter.show({ title: '提示', message: '请输入想要的主题描述', type: 'warning' });
+                    return;
+                }
+
+                const btn = event.target;
+                const originalText = btn.innerText;
+                btn.innerText = "生成中...";
+                btn.disabled = true;
+
+                const selectorsPrompt = Config.System.allowedThemeSelectors
+                    .map(item => item.desc ? `${item.selector} (${item.desc})` : item.selector)
+                    .join('\n');
+
+                const sysPrompt = `根据用户提供的主题要求，生成一套完整的 CSS 代码，用于全局接管并重塑一个操作系统的视觉风格。
+
+你必须在 #os-container 中覆盖以下 CSS 变量，以奠定全局色彩、尺寸与排版基调：
+${Config.System.allowedThemeTokens.join(', ')}
+
+你需要对以下选择器进行深度的样式重塑：
+${selectorsPrompt}
+
+遵守以下规范：
+1. 为上述选择器赋予背景色、边框、阴影、圆角和过渡效果等。为 :hover、:disabled、.active 等交互状态提供样式。可以使用::before 和 ::after 伪元素来增加装饰性 UI。
+2. 禁止修改任何元素的 position、z-index、以及核心容器的 display (如 flex 布局方向)。破坏这些属性会导致系统崩溃。
+3. 任务栏重塑 (允许)：你可以修改 #taskbar 的 width, border-radius, margin, bottom 等属性，使其匹配你的主题。
+4. 仅返回合法的纯 CSS 代码。不要使用 Markdown 代码块（如 \`\`\`css）包裹，直接输出 CSS 文本本身。`;
+
+                APIGateway.callModel(sysPrompt, `主题要求: ${prompt}`, null,
+                    (res) => {
+                        try {
+                            const cleanCss = res.replace(/```css/g, '').replace(/```/g, '').trim();
+                            const themeName = `AI-${prompt.slice(0, 10)}-${Math.random().toString(36).substr(2, 4)}`;
+
+                            this.addAndApplyTheme(themeName, cleanCss);
+
+                            NotificationCenter.show({ title: '换肤成功', message: `已生成并应用主题: ${themeName}`, type: 'success' });
+                        } catch (e) {
+                            NotificationCenter.show({ title: '生成失败', message: '应用主题时出错', type: 'error' });
+                        } finally {
+                            btn.innerText = originalText;
+                            btn.disabled = false;
+                        }
+                    },
+                    (err) => {
+                        NotificationCenter.show({ title: '生成主题失败', message: err, type: 'error' });
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                    }
+                );
+            }
+        };
+
+
+        /**
+         * 模块 4: 双引擎 API 桥接层 (Gateway)
+         */
+
+        const APIGateway = {
+            providers: {
+                'OPENAI': {
+                    name: 'OpenAI 兼容',
+                    defaultUrl: 'https://api.openai.com/v1/chat/completions',
+                    defaultModel: 'gpt-4o',
+                    fields: ['url', 'key', 'model', 'stream'],
+                    request: async (systemPrompt, userPrompt, config, onChunk, onComplete, onError) => {
+                        const { url, key, model } = config;
+                        if (!url || !key) {
+                            if (onError) onError("API URL 或 Key 未配置！"); return;
+                        }
+                        try {
+                            const response = await fetch(url, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+                                body: JSON.stringify({
+                                    model: model,
+                                    messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+                                    stream: !!onChunk
+                                })
+                            });
+                            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                            if (onChunk) {
+                                const reader = response.body.getReader();
+                                const decoder = new TextDecoder("utf-8");
+                                let fullText = "";
+                                while (true) {
+                                    const { done, value } = await reader.read();
+                                    if (done) break;
+                                    const chunk = decoder.decode(value, { stream: true });
+                                    const lines = chunk.split('\n').filter(line => line.trim() !== '');
+                                    for (const line of lines) {
+                                        if (line === 'data: [DONE]') continue;
+                                        if (line.startsWith('data: ')) {
+                                            try {
+                                                const data = JSON.parse(line.slice(6));
+                                                if (data.choices && data.choices[0].delta && data.choices[0].delta.content) {
+                                                    const delta = data.choices[0].delta.content;
+                                                    fullText += delta;
+                                                    onChunk(delta, fullText);
+                                                }
+                                            } catch (e) { }
+                                        }
+                                    }
+                                }
+                                onComplete(fullText);
+                            } else {
+                                const data = await response.json();
+                                onComplete(data.choices[0].message.content);
+                            }
+                        } catch (e) {
+                            if (onError) onError(e.message);
+                        }
+                    }
+                },
+                'GOOGLE': {
+                    name: 'Google AI Studio',
+                    defaultUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent',
+                    defaultModel: '',
+                    fields: ['url', 'key', 'stream'],
+                    request: async (systemPrompt, userPrompt, config, onChunk, onComplete, onError) => {
+                        const { url, key } = config;
+                        if (!url || !key) {
+                            if (onError) onError("Google API URL 或 Key 未配置！"); return;
+                        }
+                        try {
+                            let finalUrl = url.includes('?') ? `${url}&key=${key}` : `${url}?key=${key}`;
+                            if (!!onChunk && finalUrl.includes(':generateContent')) {
+                                finalUrl = finalUrl.replace(':generateContent', ':streamGenerateContent') + '&alt=sse';
+                            }
+
+                            const response = await fetch(finalUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    system_instruction: { parts: [{ text: systemPrompt }] },
+                                    contents: [{ parts: [{ text: userPrompt }] }]
+                                })
+                            });
+
+                            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                            if (!!onChunk && finalUrl.includes('alt=sse')) {
+                                const reader = response.body.getReader();
+                                const decoder = new TextDecoder("utf-8");
+                                let fullText = "";
+                                while (true) {
+                                    const { done, value } = await reader.read();
+                                    if (done) break;
+                                    const chunk = decoder.decode(value, { stream: true });
+                                    const lines = chunk.split('\n').filter(line => line.trim() !== '');
+                                    for (const line of lines) {
+                                        if (line.startsWith('data: ')) {
+                                            try {
+                                                const data = JSON.parse(line.slice(6));
+                                                if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
+                                                    const delta = data.candidates[0].content.parts[0].text;
+                                                    fullText += delta;
+                                                    onChunk(delta, fullText);
+                                                }
+                                            } catch (e) { }
+                                        }
+                                    }
+                                }
+                                onComplete(fullText);
+                            } else {
+                                const data = await response.json();
+                                const text = data.candidates[0].content.parts[0].text;
+                                onComplete(text);
+                            }
+                        } catch (e) {
+                            if (onError) onError(e.message);
+                        }
+                    }
+                },
+                'SILLYTAVERN': {
+                    name: 'SillyTavern',
+                    fields: ['stream'],
+                    request: async (systemPrompt, userPrompt, config, onChunk, onComplete, onError) => {
+                        try {
+                            const reqConfig = {
+                                should_stream: !!onChunk,
+                                ordered_prompts: [
+                                    { role: 'system', content: systemPrompt },
+                                    { role: 'user', content: userPrompt }
+                                ]
+                            };
+                            let streamHandler = null;
+                            if (onChunk && window.iframe_events && window.iframe_events.STREAM_TOKEN_RECEIVED_INCREMENTALLY) {
+                                streamHandler = (text) => { onChunk(text); };
+                                window.eventOn(window.iframe_events.STREAM_TOKEN_RECEIVED_INCREMENTALLY, streamHandler);
+                            }
+                            const finalResult = await window.generateRaw(reqConfig);
+                            if (streamHandler && window.iframe_events) {
+                                window.eventOff(window.iframe_events.STREAM_TOKEN_RECEIVED_INCREMENTALLY, streamHandler);
+                            }
+                            onComplete(finalResult);
+                        } catch (e) {
+                            if (onError) onError(e.message);
+                        }
+                    }
+                }
+            },
+
+            async callModel(systemPrompt, userPrompt, onChunk, onComplete, onError) {
+                const mode = Config.LLM.apiMode || 'OPENAI';
+                const provider = this.providers[mode] || this.providers['OPENAI'];
+                await provider.request(systemPrompt, userPrompt, Config.LLM, onChunk, onComplete, onError);
+            }
+        };
+
+
+        /**
+         * 模块 5: 上下文管理器与注册表 (ContextStore)
+         */
+        const ContextStore = {
+            sessions: {},
+            registry: {},
+
+            registerApp(appId, name, description, icon, publisher = '未知独立开发者', createdAt = Date.now()) {
+                this.registry[appId] = { name, description, icon: icon || '💿', publisher, createdAt };
+                this.saveRegistry();
+                UIManager.renderStartMenuApps();
+            },
+            saveSession(appId, htmlSnapshot, intentSequence, aiResponse) {
+                if (!this.sessions[appId]) this.sessions[appId] = { history: [] };
+                this.sessions[appId].htmlSnapshot = htmlSnapshot;
+
+                if (intentSequence && aiResponse) {
+                    this.sessions[appId].history.push({ role: 'user', content: `[ACTION SEQUENCE]: ${JSON.stringify(intentSequence)}` });
+                    this.sessions[appId].history.push({ role: 'assistant', content: aiResponse });
+                }
+                if (this.sessions[appId].history.length > 6) {
+                    this.sessions[appId].history = this.sessions[appId].history.slice(-6);
+                }
+                this.saveSessionsToStorage();
+            },
+            updateSnapshot(appId, htmlSnapshot) {
+                if (this.sessions[appId]) {
+                    this.sessions[appId].htmlSnapshot = htmlSnapshot;
+                    this.saveSessionsToStorage();
+                }
+            },
+            getSessionString(appId) {
+                if (!this.sessions[appId]) return "";
+                return this.sessions[appId].history.map(m => `${m.role === 'user' ? 'User' : 'System'}: ${m.content}`).join('\n');
+            },
+            saveRegistry() { StorageManager.Sync.save('vibe_registry', this.registry); },
+            loadRegistry() {
+                this.registry = StorageManager.Sync.load('vibe_registry', {});
+                UIManager.renderStartMenuApps();
+                this.loadSessionsFromStorage();
+            },
+            saveSessionsToStorage() { StorageManager.Sync.save('vibe_sessions', this.sessions); },
+            loadSessionsFromStorage() { this.sessions = StorageManager.Sync.load('vibe_sessions', {}); },
+
+            async uninstallApp(appId) {
+                if (Config.System.systemApps[appId]) {
+                    NotificationCenter.show({ title: '拒绝访问', message: '系统核心应用受保护，无法卸载。', type: 'error' });
+                    return;
+                }
+
+                if (!await ModalManager.confirm('卸载应用', `确定要卸载该应用并清除其所有缓存数据吗？此操作不可逆转。`)) return;
+
+                WindowManager.closeWindow(`win-${appId}`);
+
+                delete this.registry[appId];
+                delete this.sessions[appId];
+                this.saveRegistry();
+                this.saveSessionsToStorage();
+
+                UIManager.renderStartMenuApps();
+                const searchInput = document.getElementById('app-manage-search');
+                UIManager.renderAppManagementList(searchInput ? searchInput.value : '');
+
+                NotificationCenter.show({ title: '卸载成功', message: '应用及其数据已被彻底清除', type: 'success' });
+            }
+        };
+
+        const MemoryManager = {
+            longTermMemory: [],
+            interactionCounter: 0,
+
+            init() {
+                this.longTermMemory = StorageManager.Sync.load('vibe_memory', []);
+            },
+            save() {
+                StorageManager.Sync.save('vibe_memory', this.longTermMemory);
+            },
+            addNew() {
+                this.longTermMemory.unshift("在此输入新的事件记忆...");
+                this.save();
+                UIManager.renderMemoryList();
+                UIManager.editMemory(0); // 渲染完毕后自动展开第一个卡片进入编辑态
+            },
+            checkAndSummarizeMemory(appId, actionSequence, aiResponse) {
+                this.interactionCounter++;
+                if (this.interactionCounter >= 5) {
+                    this.interactionCounter = 0;
+                    const settingsBlock = SettingsManager.getCombinedSettingString();
+                    const memoryBlock = this.longTermMemory.length > 0 ? `[已有长期记忆]\n${this.longTermMemory.join('\n')}` : '';
+
+                    const sysPrompt = `${settingsBlock ? settingsBlock + '\n\n' : ''}${memoryBlock ? memoryBlock + '\n\n' : ''}[关键指令]
+你是一个操作系统的记忆子系统。从用户的操作日志和系统响应中提取一句简明扼要、符合事实的总结，描述一个重要事件或剧情进展。如果没有发生任何重要的事情，请严格回复“NONE”。`;
+                    const userPrompt = `App Context: ${ContextStore.registry[appId]?.name || '未知应用'}\n[操作日志] ${JSON.stringify(actionSequence)}\n[系统响应] ${aiResponse.slice(0, 300)}...`;
+
+                    AIScheduler.enqueueText(() => {
+                        return new Promise((resolve) => {
+                            APIGateway.callModel(sysPrompt, userPrompt, null,
+                                (res) => {
+                                    const fact = res.trim();
+                                    if (fact && !fact.toUpperCase().includes("NONE") && fact.length > 5) {
+                                        this.longTermMemory.push(`[From ${ContextStore.registry[appId]?.name || 'Unknown App'}] ${fact}`);
+                                        if (this.longTermMemory.length > 10) this.longTermMemory.shift();
+                                        this.save();
+                                    }
+                                    resolve();
+                                },
+                                (err) => { resolve(); }
+                            );
+                        });
+                    }, TASK_PRIORITY.BACKGROUND);
+                }
+            },
+            updateItem(index, newValue) {
+                if (newValue.trim() === '') {
+                    this.deleteItem(index);
+                } else {
+                    this.longTermMemory[index] = newValue;
+                    this.save();
+                    UIManager.renderMemoryList();
+                }
+            },
+            deleteItem(index) {
+                this.longTermMemory.splice(index, 1);
+                this.save();
+                UIManager.renderMemoryList();
+            },
+            async clearAll() {
+                if (await ModalManager.confirm('清空记忆', "确定要清空目前积累的长期记忆吗？所有 AI 对过去的认知将被重置。")) {
+                    this.longTermMemory = [];
+                    this.save();
+                    UIManager.renderMemoryList();
+                    NotificationCenter.show({ title: '长期记忆', message: '记忆已清理完成', type: 'success' });
+                }
+            }
+        };
+
+
+        /**
+         * 模块 7: 提示词工厂 (Prompt Builder)
+         */
+        const PromptBuilder = {
+            buildSystemPrompt(appId) {
+                const appMeta = ContextStore.registry[appId] || Config.System.systemApps[appId];
+                const history = ContextStore.getSessionString(appId);
+                const memoryBlock = MemoryManager.longTermMemory.length > 0
+                    ? `[长期记忆]\n${MemoryManager.longTermMemory.join('\n')}` : '';
+                const settingsBlock = SettingsManager.getCombinedSettingString();
+
+                const isColdStart = !history || history.trim() === '';
+                const actionDesc = isColdStart ? '初始化 UI 界面' : '更新 UI 界面';
+
+                const allowedComponentsStr = Config.System.allowedUIClasses
+                    .map(item => {
+                        const classText = item.classes && item.classes.length ? `，可用类名 ${item.classes.join(', ')}` : '';
+                        return `- <${item.tag}>${classText}: ${item.desc}`;
+                    })
+                    .join('\n');
+
+                return `${settingsBlock ? settingsBlock + '\n\n' : ''}[当前应用]
+应用名称：${appMeta ? appMeta.name : 'Unknown'}
+应用描述：${appMeta ? appMeta.description : 'Unknown'}
+应用主容器 ID：content-${appId}
+容器物理环境：这是一个原生具有 "display: flex; flex-direction: column; overflow: hidden; padding: 0;" 属性的刚性无边距画板。
+
+${!isColdStart ? `[历史上下文]\n${history}\n\n` : ''}${memoryBlock ? memoryBlock + '\n\n' : ''}[关键指令]
+你在为一个操作系统中的应用${actionDesc}。
+你可以且仅可以使用以下 HTML 标签及预设 CSS 类名构建 UI：
+${allowedComponentsStr}
+
+遵守下述规则：
+1. 仅输出 HTML，不要有任何对话文本、Markdown 代码块（如 \`\`\`html）或心理活动。
+2. ${isColdStart ? '仅输出主窗口内容的内部 HTML，内容尽可能丰富。不要生成任何登录、注册或加载中的界面，假设用户已经登录。首屏推荐且优先使用如下应用结构：<tool-bar id="...">...</tool-bar><app-layout id="...">...</app-layout><status-bar id="...">...</status-bar>。tool-bar 和 status-bar 是应用外壳，必须位于 app-layout 外；app-layout 是主内容区，系统已预置 flex:1、纵向布局和 overflow hidden，不要用普通 div 加长串 style 代替 app-layout。' : '识别因用户动作而需要更新的最深层 DOM 节点，返回的HTML是这个节点的Diff，系统会自动处理。默认只更新 <app-layout> 内与动作相关的最深层带 ID 元素；除非用户动作明确改变工具栏或状态栏，否则不要返回 tool-bar/status-bar 或整个页面结构。该节点及其未改变的子节点的ID需与快照中保持一致。'}
+3. 实体控件（按钮、输入框、下拉框、文本框、图片、进度条、菜单行、状态字段等）不负责外边距；间距、分栏、滚动、对齐交给外层容器处理。
+4. 允许使用内联 style 处理局部布局、空间和滚动。允许属性：display、flex、flex-direction、gap、grid-template-*、grid-column/row、align-*、justify-*、padding、margin、width、height、min/max-width/height、overflow、box-sizing、order。禁止内联修改视觉主题或层级：color、background、border-color、box-shadow、font-family、border-radius、z-index、position:absolute/fixed、动画、滤镜。
+5. 可交互元素、会变化元素、图片、以及未来可能作为 Diff 替换目标的容器必须具备唯一 'id' 属性${isColdStart ? '。纯展示叶子节点可以没有 id。' : '；如果替换的HTML包含原有元素，更新后这些元素的 id 等属性不能修改。'}
+6. 如果需要弹窗，输出普通 <dialog id="...">，内部使用 .dialog-header、.dialog-body、.dialog-footer 组织结构；AI 不需要写任何 data-dialog-scope。dialog-footer 中的确认/应用按钮会触发一次界面更新，取消/关闭按钮只关闭弹窗。
+7. 如果需要展示图像，格式必须为：<img id="unique-img-id" class="img" data-prompt="图片描述" src="">。将 src 留空，系统将拦截它并自动填充图像。图片描述为：${ImageService.getCurrentInstruction()}${!isColdStart ? '\n8. 如果原有图片在更新后内容不变（如图片点击展开大图、创建副本等），则id、属性和更新前的原图保持一致；如果内容发生变化，则图片id和描述都需要进行修改。' : ''}`;
+            },
+
+            buildUserPrompt(domSnapshot, actionSequence) {
+                return `[当前 UI 快照]\n${domSnapshot}\n\n[用户动作]\n${JSON.stringify(actionSequence, null, 2)}\n\n分析这组动作的逻辑后果。输出代表更新后 UI 状态的精确 HTML 节点（必须保留其原始 ID）。`;
+            }
+        };
+
+        /**
+         * 模块 7.5: 语义组件运行时 (Component Runtime)
+         */
+        const ComponentRuntime = {
+            _globalBound: false,
+
+            init(container = document) {
+                if (!container) return;
+                this._bindGlobalEvents();
+                this._initToolbars(container);
+                this._initTreeViews(container);
+                this._initTabViews(container);
+                this._initDialogs(container);
+            },
+
+            closeToolPopups(root = document) {
+                root.querySelectorAll('tool-item[aria-expanded="true"]').forEach(item => {
+                    item.setAttribute('aria-expanded', 'false');
+                });
+            },
+
+            _bindGlobalEvents() {
+                if (this._globalBound) return;
+                this._globalBound = true;
+
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('tool-bar')) this.closeToolPopups();
+                });
+            },
+
+            _initToolbars(container) {
+                container.querySelectorAll('tool-item').forEach(item => {
+                    if (item.dataset.runtimeBound === 'true') return;
+                    item.dataset.runtimeBound = 'true';
+                    if (!item.hasAttribute('aria-expanded')) item.setAttribute('aria-expanded', 'false');
+
+                    const popup = item.querySelector(':scope > tool-popup');
+                    if (!popup) return;
+
+                    item.addEventListener('click', (e) => {
+                        if (e.target.closest('tool-row')) return;
+                        e.stopPropagation();
+                        const toolbar = item.closest('tool-bar');
+                        const nextState = item.getAttribute('aria-expanded') !== 'true';
+                        if (toolbar) this.closeToolPopups(toolbar);
+                        item.setAttribute('aria-expanded', nextState ? 'true' : 'false');
+                    });
+
+                    item.addEventListener('mouseenter', () => {
+                        const toolbar = item.closest('tool-bar');
+                        if (toolbar && toolbar.querySelector('tool-item[aria-expanded="true"]')) {
+                            this.closeToolPopups(toolbar);
+                            item.setAttribute('aria-expanded', 'true');
+                        }
+                    });
+                });
+            },
+
+            _initTreeViews(container) {
+                container.querySelectorAll('tree-view li').forEach(node => {
+                    if (node.dataset.runtimeBound === 'true') return;
+                    node.dataset.runtimeBound = 'true';
+                    const nested = node.querySelector(':scope > ul, :scope > tree-view');
+                    if (!nested) return;
+                    node.addEventListener('click', (e) => {
+                        if (e.target !== node && e.target.closest('button, input, select, textarea, a, tool-row')) return;
+                        node.classList.toggle('collapsed');
+                        e.stopPropagation();
+                    });
+                });
+            },
+
+            _initTabViews(container) {
+                container.querySelectorAll('tab-view').forEach(tabView => {
+                    if (tabView.dataset.runtimeBound === 'true') return;
+                    tabView.dataset.runtimeBound = 'true';
+
+                    const tabs = Array.from(tabView.querySelectorAll('[role="tab"]'));
+                    const panels = Array.from(tabView.querySelectorAll('[role="tabpanel"]'));
+                    const activate = (tab) => {
+                        const panelId = tab.getAttribute('aria-controls');
+                        tabs.forEach(t => t.setAttribute('aria-selected', t === tab ? 'true' : 'false'));
+                        panels.forEach(panel => {
+                            const active = panel.id && panel.id === panelId;
+                            panel.toggleAttribute('hidden', !active);
+                        });
+                    };
+
+                    tabs.forEach(tab => {
+                        if (!tab.hasAttribute('aria-selected')) tab.setAttribute('aria-selected', 'false');
+                        tab.addEventListener('click', (e) => {
+                            activate(tab);
+                            e.stopPropagation();
+                        });
+                    });
+
+                    const selected = tabs.find(tab => tab.getAttribute('aria-selected') === 'true') || tabs[0];
+                    if (selected) activate(selected);
+                });
+            },
+
+            _initDialogs(container) {
+                container.querySelectorAll('.window-content dialog').forEach(dialog => {
+                    if (dialog.dataset.runtimeBound === 'true') return;
+                    dialog.dataset.runtimeBound = 'true';
+
+                    if (!dialog.open) {
+                        try {
+                            dialog.showModal();
+                        } catch (e) {
+                            dialog.setAttribute('open', '');
+                        }
+                    }
+                });
+            }
+        };
+
+
+        /**
+         * 模块 6: 纯粹的渲染器 (DOM Patcher)
+         */
+        const DOMPatcher = {
+            applyPatch(containerElement, htmlString, options = {}) {
+                if (!htmlString.trim()) return false;
+
+                const newNodes = Utils.parseDOM(htmlString);
+
+                if (typeof options.onBeforeMount === 'function') {
+                    for (const newNode of newNodes) {
+                        options.onBeforeMount(newNode);
+                    }
+                }
+
+                if (options.allowFullMount) {
+                    containerElement.innerHTML = '';
+                    newNodes.forEach(node => containerElement.appendChild(node));
+                    ComponentRuntime.init(containerElement);
+                    return true;
+                }
+
+                const replacements = [];
+                for (const newNode of newNodes) {
+                    if (!newNode.id) {
+                        this._notifyPatchFailure('AI 返回的更新节点缺少顶层 ID，请重试。');
+                        return false;
+                    }
+                    if (newNode.id === containerElement.id) {
+                        this._notifyPatchFailure('AI 试图替换整个应用容器，请重试。');
+                        return false;
+                    }
+                    const oldNode = containerElement.querySelector(`#${CSS.escape(newNode.id)}`);
+                    if (!oldNode) {
+                        this._notifyPatchFailure(`找不到可匹配的更新节点 #${newNode.id}，请重试。`);
+                        return false;
+                    }
+                    replacements.push({ oldNode, newNode });
+                }
+
+                replacements.forEach(({ oldNode, newNode }) => oldNode.replaceWith(newNode));
+                ComponentRuntime.init(containerElement);
+                return replacements.length > 0;
+            },
+
+            _notifyPatchFailure(message) {
+                console.warn('[DOMPatcher]', message);
+                NotificationCenter.show({
+                    title: '交互失败',
+                    message,
+                    type: 'warning',
+                    duration: 5000
+                });
+            }
+        };
+
+        /**
+         * 模块 9: 全新架构 Image Service
+         */
+        const ImageService = {
+            _createFallbackSVG(text) {
+                return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="100%" height="100%" fill="%23ece9d8"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%230058e6">${encodeURIComponent(text)}</text></svg>`;
+            },
+
+            // [修改] 原生 ZIP 解析与解压，增加了对 ZIP 尾部冗余数据的智能容错处理
+            // 原生反向寻址精准切片法，规避 ZIP 脏尾部导致的解压崩溃
+            async _extract(buffer) {
+                const bytes = new Uint8Array(buffer);
+
+                let eocdOffset = -1;
+                for (let i = bytes.length - 22; i >= 0; i--) {
+                    if (bytes[i] === 0x50 && bytes[i + 1] === 0x4B && bytes[i + 2] === 0x05 && bytes[i + 3] === 0x06) { eocdOffset = i; break; }
+                }
+                if (eocdOffset === -1) throw new Error("无法在响应中找到 ZIP 的 EOCD 尾部记录");
+
+                const eocdView = new DataView(bytes.buffer, bytes.byteOffset + eocdOffset);
+                const cdOffset = eocdView.getUint32(16, true);
+
+                const cdView = new DataView(bytes.buffer, bytes.byteOffset + cdOffset);
+                if (cdView.getUint32(0, true) !== 0x02014B50) throw new Error("ZIP Central Directory 校验失败");
+
+                const exactCompressedSize = cdView.getUint32(20, true);
+
+                let localHeaderOffset = -1;
+                for (let i = 0; i + 4 <= bytes.length; i++) {
+                    if (bytes[i] === 0x50 && bytes[i + 1] === 0x4B && bytes[i + 2] === 0x03 && bytes[i + 3] === 0x04) { localHeaderOffset = i; break; }
+                }
+                if (localHeaderOffset === -1) throw new Error("无法在响应中找到 ZIP 文件头");
+
+                const localView = new DataView(bytes.buffer, bytes.byteOffset + localHeaderOffset);
+                const method = localView.getUint16(8, true);
+                const filenameLen = localView.getUint16(26, true);
+                const extraLen = localView.getUint16(28, true);
+
+                const dataStart = localHeaderOffset + 30 + filenameLen + extraLen;
+                const exactPayload = bytes.slice(dataStart, dataStart + exactCompressedSize);
+
+                let unzippedData;
+                if (method === 0) {
+                    unzippedData = exactPayload;
+                } else if (method === 8) {
+                    if (typeof DecompressionStream === 'undefined') throw new Error("您的浏览器不支持原生解压接口");
+                    const ds = new DecompressionStream('deflate-raw');
+                    const writer = ds.writable.getWriter();
+                    writer.write(exactPayload).catch(() => { });
+                    writer.close().catch(() => { });
+
+                    const unzippedBuffer = await new Response(ds.readable).arrayBuffer();
+                    unzippedData = new Uint8Array(unzippedBuffer);
+                } else {
+                    throw new Error(`不支持的 ZIP 压缩方法: ${method}`);
+                }
+
+                for (let i = 0; i + 4 <= unzippedData.length; i++) {
+                    if (unzippedData[i] === 0x89 && unzippedData[i + 1] === 0x50 && unzippedData[i + 2] === 0x4E && unzippedData[i + 3] === 0x47) {
+                        return new Blob([unzippedData.slice(i)], { type: 'image/png' });
+                    }
+                    if (unzippedData[i] === 0xFF && unzippedData[i + 1] === 0xD8 && unzippedData[i + 2] === 0xFF) {
+                        return new Blob([unzippedData.slice(i)], { type: 'image/jpeg' });
+                    }
+                }
+                throw new Error("成功解压 ZIP，但未能在内部找到有效的图像数据");
+            },
+
+            _createFallbackSVG(text) {
+                return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="100%" height="100%" fill="%23ece9d8"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%230058e6">${encodeURIComponent(text)}</text></svg>`;
+            },
+
+            providers: {
+                'MOCK': {
+                    defaultUrl: '',
+                    instruction: "宽x高|关键词组合（英文逗号分隔，仅限1~3个名词）。例如：800x600|cyberpunk,city 或 200x200|avatar,cat",
+                    doGenerate: async (prompt, config, service) => {
+                        return new Promise(resolve => {
+                            let width = 400, height = 300;
+                            let keywords = "technology,abstract";
+
+                            if (prompt.includes('|')) {
+                                const parts = prompt.split('|');
+                                const sizeStr = parts[0].trim().toLowerCase();
+                                const sizeMatch = sizeStr.match(/^(\d+)x(\d+)$/);
+                                if (sizeMatch) {
+                                    width = parseInt(sizeMatch[1], 10) || 400;
+                                    height = parseInt(sizeMatch[2], 10) || 300;
+                                }
+                                keywords = parts[1].trim() || keywords;
+                            } else {
+                                keywords = prompt.trim() || keywords;
+                            }
+
+                            const cleanKeywords = keywords.split(',').map(k => k.trim()).filter(k => k).join(',');
+                            const suffix = cleanKeywords.includes(',') ? '/all' : '';
+                            const url = `https://loremflickr.com/${width}/${height}/${cleanKeywords}${suffix}`;
+
+                            setTimeout(() => resolve(url), 300);
+                        });
+                    }
+                },
+                'NOVELAI': {
+                    defaultUrl: 'https://image.novelai.net/ai/generate-image',
+                    instruction: "详细特征标签，以英文逗号分隔。可指定尺寸，例如：832x1216|masterpiece, highly detailed, cyberpunk city",
+                    doGenerate: async (prompt, config, service) => {
+                        const { imgUrl: url, imgKey: key, imgPos: pos, imgNeg: neg, signal } = config;
+                        if (!url || !key) throw new Error("NovelAI API 配置缺失");
+
+                        let width = 832, height = 1216;
+                        let actualPrompt = prompt;
+
+                        if (prompt.includes('|')) {
+                            const parts = prompt.split('|');
+                            const sizeMatch = parts[0].trim().toLowerCase().match(/^(\d+)x(\d+)$/);
+                            if (sizeMatch) {
+                                width = Math.max(256, Math.floor(parseInt(sizeMatch[1], 10) / 64) * 64);
+                                height = Math.max(256, Math.floor(parseInt(sizeMatch[2], 10) / 64) * 64);
+                            }
+                            actualPrompt = parts[1].trim();
+                        }
+
+                        const isNsfw = /^\s*nsfw/i.test(actualPrompt);
+                        const finalNeg = neg && neg.trim() !== '' ? neg : '';
+                        const finalPos = pos && pos.trim() !== '' ? pos : '';
+                        const fullPositive = actualPrompt + (finalPos ? ", " + finalPos : "");
+
+                        const payload = {
+                            input: fullPositive,
+                            model: "nai-diffusion-4-5-full",
+                            action: "generate",
+                            parameters: {
+                                params_version: 3, width: width, height: height, scale: 5, sampler: 'k_euler_ancestral', steps: 28,
+                                n_samples: 1, ucPreset: isNsfw ? 3 : 0, qualityToggle: true, autoSmea: false,
+                                dynamic_thresholding: false, controlnet_strength: 1, legacy: false, add_original_image: true,
+                                cfg_rescale: 0, noise_schedule: 'karras', legacy_v3_extend: false, skip_cfg_above_sigma: null,
+                                use_coords: false, legacy_uc: false, normalize_reference_strength_multiple: true,
+                                deliberate_euler_ancestral_bug: false, prefer_brownian: true,
+                                seed: Math.floor(Math.random() * 4294967295),
+                                characterPrompts: [], negative_prompt: finalNeg, reference_image_multiple: [],
+                                reference_information_extracted_multiple: [], reference_strength_multiple: [],
+                                v4_prompt: { caption: { base_caption: fullPositive, char_captions: [] }, use_coords: false, use_order: true },
+                                v4_negative_prompt: { caption: { base_caption: finalNeg, char_captions: [] }, legacy_uc: false }
+                            }
+                        };
+
+                        let res;
+                        try {
+                            res = await fetch(url, {
+                                method: 'POST',
+                                signal: signal,
+                                headers: {
+                                    'Authorization': key.startsWith('Bearer') ? key : `Bearer ${key}`,
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/x-zip-compressed, image/png, */*'
+                                },
+                                body: JSON.stringify(payload)
+                            });
+                        } catch (e) {
+                            if (e.name === 'AbortError') throw e;
+                            throw new Error("网络请求被跨域拦截 (Failed to fetch)。这通常是因为并发过高触发了服务器 429 限制。");
+                        }
+
+                        if (!res.ok) {
+                            let errText = await res.text().catch(() => '');
+                            throw new Error(`API 错误 ${res.status}: ${errText.slice(0, 100)}`);
+                        }
+
+                        const buf = await res.arrayBuffer();
+                        return await service._extract(buf);
+                    }
+                },
+                'DALLE': {
+                    defaultUrl: 'https://api.openai.com/v1/images/generations',
+                    instruction: "详细的自然语言描述画面。例如：一只戴着赛博朋克风格墨镜的猫坐在霓虹灯下。",
+                    doGenerate: async (prompt, config, service) => {
+                        return service._createFallbackSVG(`[DALLE Placeholder] ${prompt}`);
+                    }
+                }
+            },
+
+            // 动态读取当前模式所需的 Prompt 注入指令
+            getCurrentInstruction() {
+                const mode = Config.Image.imgApi || 'MOCK';
+                const provider = this.providers[mode] || this.providers['MOCK'];
+                return provider.instruction;
+            },
+
+            async generate(prompt, signal) {
+                const config = Config.Image;
+                const mode = config.imgApi || 'MOCK';
+                const provider = this.providers[mode] || this.providers['MOCK'];
+
+                const executeConfig = { ...config, signal };
+                return await provider.doGenerate(prompt, executeConfig, this);
+            }
+        };
+
+        /**
+         * 模块 12: 全局 AI 任务调度中心 (Global Task Scheduler)
+         * 职责：文本与图片双通道并发控制、任务优先级抢占、DOM 生命周期嗅探
+         */
+        const TASK_PRIORITY = {
+            URGENT: 0,      // 用户直接触发的 UI 交互演算、应用启动（最高优先级）
+            NORMAL: 5,      // 普通流转任务（如加载普通图片）
+            BACKGROUND: 10  // 后台静默任务（如长期记忆提炼，插空进行）
+        };
+
+        const AIScheduler = {
+            taskIdCounter: 0,
+            textQueue: [],
+            imageQueue: [],
+            isTextProcessing: false,
+            isImageProcessing: false,
+
+            // --- 文本模型通道 (绝对串行) ---
+            enqueueText(taskFn, priority = TASK_PRIORITY.NORMAL) {
+                this.textQueue.push({ id: this.taskIdCounter++, fn: taskFn, priority });
+                this.textQueue.sort((a, b) => a.priority === b.priority ? a.id - b.id : a.priority - b.priority);
+                this._processText();
+            },
+
+            async _processText() {
+                if (this.isTextProcessing) return;
+                this.isTextProcessing = true;
+
+                while (this.textQueue.length > 0) {
+                    const task = this.textQueue.shift();
+                    try {
+                        await task.fn();
+                    } catch (e) {
+                        console.error("[Scheduler] 文本任务执行异常:", e);
+                    }
+                    await new Promise(r => setTimeout(r, 100)); // 喘息时间
+                }
+
+                this.isTextProcessing = false;
+            },
+
+            // --- 多模态生图通道 (独立串行 + 生命周期嗅探) ---
+            enqueueImage(appId, container, imgNode, prompt, priority = TASK_PRIORITY.NORMAL) {
+                const existing = this.imageQueue.find(t => t.imgNode === imgNode);
+                if (existing) {
+                    existing.prompt = prompt;
+                    existing.priority = priority;
+                    this.imageQueue.sort((a, b) => a.priority === b.priority ? a.id - b.id : a.priority - b.priority);
+                    return;
+                }
+
+                this.imageQueue.push({
+                    id: this.taskIdCounter++,
+                    appId, container, imgNode, prompt, priority,
+                    abortController: (typeof AbortController !== 'undefined') ? new AbortController() : null
+                });
+                this.imageQueue.sort((a, b) => a.priority === b.priority ? a.id - b.id : a.priority - b.priority);
+                this._processImage();
+            },
+
+            async _processImage() {
+                if (this.isImageProcessing) return;
+                this.isImageProcessing = true;
+
+                while (this.imageQueue.length > 0) {
+                    const task = this.imageQueue.shift();
+
+                    if (!task.imgNode.isConnected) {
+                        console.log(`[Scheduler] 节点已销毁，取消生成: ${task.prompt}`);
+                        continue;
+                    }
+
+                    try {
+                        const signal = task.abortController ? task.abortController.signal : null;
+                        const blob = await ImageService.generate(task.prompt, signal);
+
+                        const objectUrl = typeof blob === 'string' ? blob : URL.createObjectURL(blob);
+
+                        if (task.imgNode.isConnected) {
+                            task.imgNode.src = objectUrl;
+                            task.imgNode.alt = `[已生成的图像: ${task.prompt}]`;
+                            task.imgNode.classList.remove('cursor-pointer');
+
+                            // 存入异步瞬态缓存，必须严格绑定 ID + Prompt
+                            if (typeof blob !== 'string' && task.imgNode.id) {
+                                const cacheKey = Utils.hashPrompt(task.imgNode.id + '|' + task.prompt);
+                                await StorageManager.BlobCache.put(cacheKey, blob);
+                            }
+
+                            // 存入上下文时净化 HTML，去掉 src 里的 Blob URL，防止撑爆 LocalStorage
+                            ContextStore.updateSnapshot(task.appId, Utils.getPurifiedHTML(task.container));
+                        }
+                    } catch (e) {
+                        if (e.name === 'AbortError') continue;
+
+                        if (task.imgNode.isConnected) {
+                            task.imgNode.src = ImageService._createFallbackSVG(`生成失败: ${e.message}`);
+                            task.imgNode.alt = `[生成失败: ${task.prompt}]`;
+                            task.imgNode.setAttribute('data-failed-prompt', task.prompt);
+                            task.imgNode.removeAttribute('data-prompt');
+                            task.imgNode.classList.add('cursor-pointer');
+
+                            // 失败状态同样需要净化 HTML
+                            ContextStore.updateSnapshot(task.appId, Utils.getPurifiedHTML(task.container));
+                        }
+                    }
+
+                    // 智能动态冷却：防 429
+                    await new Promise(r => setTimeout(r, 1500));
+                }
+
+                this.isImageProcessing = false;
+            },
+
+            clearImagesForApp(appId) {
+                const toCancel = this.imageQueue.filter(t => t.appId === appId);
+                toCancel.forEach(t => { if (t.abortController) t.abortController.abort(); });
+                this.imageQueue = this.imageQueue.filter(t => t.appId !== appId);
+            }
+        };
+
+        /**
+         * 模块 10: 核心调度器 (App Controller)
+         */
+        const AppController = {
+            async dispatchIntent(appId, container, actionSequence) {
+                const domSnapshot = Utils.getPurifiedHTML(container);
+                WindowManager.showLoading(appId);
+
+                const sysPrompt = PromptBuilder.buildSystemPrompt(appId);
+                const userPrompt = PromptBuilder.buildUserPrompt(domSnapshot, actionSequence);
+                const onChunk = Config.LLM.useStreaming ? (delta, fullText) => { } : null;
+
+                AIScheduler.enqueueText(() => {
+                    return new Promise((resolve) => {
+                        APIGateway.callModel(sysPrompt, userPrompt, onChunk,
+                            (finalHTML) => {
+                                WindowManager.hideLoading(appId);
+
+                                const applied = DOMPatcher.applyPatch(container, finalHTML, {
+                                    onBeforeMount: (newNode) => {
+                                        const imagesToPatch = newNode.tagName === 'IMG' ? [newNode] : newNode.querySelectorAll('img[data-prompt]');
+                                        for (const img of imagesToPatch) {
+                                            if (img.hasAttribute('data-prompt')) {
+                                                img.src = ImageService._createFallbackSVG('准备排队...');
+                                            }
+                                        }
+                                    }
+                                });
+
+                                if (applied) {
+                                    ContextStore.saveSession(appId, Utils.getPurifiedHTML(container), actionSequence, finalHTML);
+                                    MemoryManager.checkAndSummarizeMemory(appId, actionSequence, finalHTML);
+
+                                    UIManager.handleImageHydration(appId, container);
+                                }
+                                resolve();
+                            },
+                            (err) => {
+                                WindowManager.hideLoading(appId);
+                                NotificationCenter.show({ title: 'API 错误', message: err, type: 'error', duration: 8000 });
+                                resolve();
+                            }
+                        );
+                    });
+                }, TASK_PRIORITY.URGENT);
+            }
+        };
+
+        /**
+         * 模块 9: 事件委托与行为缓冲池 (Event Delegator)
+         */
+        const EventDelegator = {
+            actionBuffers: {},
+
+            init() {
+                const osContainer = document.getElementById('os-container');
+                osContainer.addEventListener('input', (e) => this.handlePassiveAction(e, 'input'));
+                osContainer.addEventListener('change', (e) => this.handlePassiveAction(e, 'change'));
+                osContainer.addEventListener('focusin', (e) => this.handlePassiveAction(e, 'focus'));
+                osContainer.addEventListener('click', (e) => this.handleActiveAction(e, 'click'));
+                osContainer.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && e.target.tagName === 'INPUT' && !['button', 'checkbox', 'radio'].includes(e.target.type)) {
+                        this.handleActiveAction(e, 'submit_enter');
+                    }
+                });
+            },
+
+            _getAppId(target) {
+                const appWindow = target.closest('.window');
+                if (!appWindow) return null;
+                const appId = appWindow.id.replace('win-', '');
+
+                // 动态检查 Config 中是否为原生系统应用，彻底消灭硬编码
+                if (Config.System.systemApps[appId]) return null;
+                // 预留注册表扩展判断：如果是未来通过 ContextStore 注册的原生应用也豁免
+                if (ContextStore.registry[appId]?.type === 'SYSTEM') return null;
+
+                return appId;
+            },
+
+            _isDialogCancel(control) {
+                const action = (control.getAttribute('data-dialog-action') || '').toLowerCase();
+                const text = (control.innerText || control.value || '').trim().toLowerCase();
+                return action === 'cancel' || ['取消', '关闭', 'close', 'cancel', 'x', '×'].includes(text);
+            },
+
+            _closeAppDialog(dialog) {
+                if (!dialog) return;
+                if (dialog.open) {
+                    try { dialog.close(); } catch (e) { dialog.removeAttribute('open'); }
+                }
+                dialog.remove();
+            },
+
+            handlePassiveAction(e, type) {
+                if (e.target.closest('#modal-container')) return; // 物理隔离防火墙
+                if (!e.target.closest('.window-content')) return;
+
+                const target = e.target.closest('[id]');
+                if (!target || target.id.startsWith('wm-') || target.id.startsWith('win-')) return;
+                const appId = this._getAppId(target);
+                if (!appId) return;
+
+                if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
+                    if (target.type === 'checkbox' || target.type === 'radio') {
+                        target.toggleAttribute('checked', target.checked);
+                    } else {
+                        target.setAttribute('value', target.value);
+                    }
+                }
+
+                if (!this.actionBuffers[appId]) this.actionBuffers[appId] = [];
+                const log = { type: type, targetId: target.id };
+                if (['input', 'change'].includes(type)) {
+                    log.value = target.type === 'checkbox' ? target.checked : target.value;
+                }
+                this.actionBuffers[appId].push(log);
+            },
+
+            handleActiveAction(e, type) {
+                if (e.target.closest('#modal-container')) return; // 物理隔离防火墙
+                if (!e.target.closest('.window-content')) return;
+                if (e.target.closest('.global-loading-overlay')) return;
+
+                const failedImg = e.target.closest('img[data-failed-prompt]');
+                if (failedImg) {
+                    const prompt = failedImg.getAttribute('data-failed-prompt');
+                    failedImg.setAttribute('data-prompt', prompt);
+                    failedImg.removeAttribute('data-failed-prompt');
+                    failedImg.classList.remove('cursor-pointer');
+                    failedImg.src = ImageService._createFallbackSVG('准备重试...');
+
+                    const appId = this._getAppId(failedImg);
+                    const contentContainer = appId ? document.getElementById(`content-${appId}`) : null;
+                    if (appId && contentContainer) {
+                        UIManager.handleImageHydration(appId, contentContainer);
+                    }
+                    return;
+                }
+
+                const appDialog = e.target.closest('.window-content dialog');
+                const dialogControl = appDialog ? e.target.closest('button, [role="button"], .dialog-close, [data-dialog-action]') : null;
+                if (appDialog && type === 'click' && dialogControl && this._isDialogCancel(dialogControl)) {
+                    const appId = this._getAppId(appDialog);
+                    if (appId) this.actionBuffers[appId] = [];
+                    this._closeAppDialog(appDialog);
+                    return;
+                }
+
+                const target = e.target.closest('[id]');
+                if (!target || target.id.startsWith('wm-') || target.id.startsWith('win-') || target.id.startsWith('content-')) {
+                    if (e.target.closest('button, input, select, textarea, a, tool-row, [role="button"]')) {
+                        NotificationCenter.show({ title: '交互失败', message: '该控件缺少可交互 ID，请重试。', type: 'warning' });
+                    }
+                    return;
+                }
+
+                if (type === 'click') {
+                    const tagName = target.tagName.toUpperCase();
+                    if ((tagName === 'INPUT' && !['button', 'checkbox', 'radio', 'submit'].includes(target.type)) || tagName === 'TEXTAREA' || tagName === 'SELECT') return;
+                }
+
+                const appId = this._getAppId(target);
+                const contentContainer = appId ? document.getElementById(`content-${appId}`) : null;
+                if (!appId || !contentContainer) return;
+
+                if (!this.actionBuffers[appId]) this.actionBuffers[appId] = [];
+                this.actionBuffers[appId].push({ type: type, targetId: target.id });
+
+                const actionSequence = [...this.actionBuffers[appId]];
+                this.actionBuffers[appId] = [];
+
+                AppController.dispatchIntent(appId, contentContainer, actionSequence);
+                if (appDialog && dialogControl) this._closeAppDialog(appDialog);
+            }
+        };
+
+        /**
+         * 模块 10: 窗口管理器 (Window Manager)
+         */
+        const WindowManager = {
+            zIndex: 100,
+            createWindow(appId, title, contentHTML, icon = '💿') {
+                const winId = `win-${appId}`;
+                if (document.getElementById(winId)) { this.toggleMinimize(winId, true); return; }
+
+                // 1. 克隆模板骨架
+                const template = document.getElementById('tpl-os-window');
+                if (!template) return;
+                const clone = template.content.cloneNode(true);
+                const win = clone.querySelector('.window');
+
+                // 2. 注入动态属性与内容
+                win.id = winId;
+                win.style.left = `${Math.random() * 50 + 20}px`;
+                win.style.top = `${Math.random() * 50 + 20}px`;
+                win.style.zIndex = ++this.zIndex;
+
+                win.querySelector('.window-title').innerHTML = `${icon} ${title}`;
+
+                const contentDiv = win.querySelector('.window-content');
+                contentDiv.id = `content-${appId}`;
+                contentDiv.innerHTML = contentHTML;
+
+                // 3. 安全挂载闭包事件 (替代被淘汰的 inline onclick)
+                win.querySelector('.window-header').addEventListener('mousedown', (e) => this.startDrag(e, win));
+                win.querySelector('.btn-min').addEventListener('click', () => this.toggleMinimize(winId));
+                win.querySelector('.btn-max').addEventListener('click', () => this.toggleMaximize(winId));
+                win.querySelector('.btn-close').addEventListener('click', () => this.closeWindow(winId));
+                win.addEventListener('mousedown', () => this.bringToFront(win));
+
+                // 4. 上树
+                document.getElementById('os-container').appendChild(clone);
+                ComponentRuntime.init(contentDiv);
+
+                const taskbarApps = document.getElementById('taskbar-apps');
+                const tab = document.createElement('div');
+                tab.className = 'taskbar-item active'; tab.id = `tab-${winId}`;
+                tab.innerText = `${icon} ${title}`;
+                tab.onclick = () => this.toggleMinimize(winId);
+                taskbarApps.appendChild(tab);
+
+                this.bringToFront(win);
+            },
+            closeWindow(winId) {
+                const win = document.getElementById(winId);
+                if (win) {
+                    win.remove();
+                    const tab = document.getElementById(`tab-${winId}`);
+                    if (tab) tab.remove();
+                    const appId = winId.replace('win-', '');
+                    if (EventDelegator.actionBuffers[appId]) delete EventDelegator.actionBuffers[appId];
+                    AIScheduler.clearImagesForApp(appId);
+                }
+            },
+            toggleMinimize(winId, forceShow = false) {
+                const win = document.getElementById(winId);
+                const tab = document.getElementById(`tab-${winId}`);
+                if (!win) return;
+                if (win.style.display === 'none' || forceShow) {
+                    win.style.display = 'flex'; this.bringToFront(win);
+                } else {
+                    if (win.style.zIndex == this.zIndex) {
+                        win.style.display = 'none'; if (tab) tab.classList.remove('active');
+                    } else {
+                        this.bringToFront(win);
+                    }
+                }
+            },
+            toggleMaximize(winId) {
+                const win = document.getElementById(winId);
+                if (win) win.classList.toggle('maximized');
+            },
+            bringToFront(win) {
+                win.style.zIndex = ++this.zIndex;
+                document.querySelectorAll('.taskbar-item').forEach(el => el.classList.remove('active'));
+                const tab = document.getElementById(`tab-${win.id}`);
+                if (tab) tab.classList.add('active');
+            },
+            startDrag(e, win) {
+                if (win.classList.contains('maximized')) return;
+                const parentRect = win.offsetParent.getBoundingClientRect();
+                const winRect = win.getBoundingClientRect();
+                const offsetX = e.clientX - winRect.left;
+                const offsetY = e.clientY - winRect.top;
+
+                const move = (e) => {
+                    win.style.left = `${e.clientX - parentRect.left - offsetX}px`;
+                    win.style.top = `${e.clientY - parentRect.top - offsetY}px`;
+                };
+                const up = () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); };
+                document.addEventListener('mousemove', move); document.addEventListener('mouseup', up);
+            },
+            showLoading(appId) {
+                // 【修复】根绝幽灵状态：将加载动画挂载在外壳窗口本身，绝对不污染 content.innerHTML
+                const win = document.getElementById(`win-${appId}`);
+                if (win && !win.querySelector('.global-loading-overlay')) {
+                    const overlay = document.createElement('div');
+                    overlay.className = 'global-loading-overlay';
+                    overlay.id = `loading-${appId}`;
+                    overlay.innerText = 'VibeOS 正在生成 UI...';
+                    win.appendChild(overlay);
+                }
+            },
+            hideLoading(appId) {
+                const loading = document.getElementById(`loading-${appId}`);
+                if (loading) loading.remove();
+            }
+        };
+
+        /**
+         * 模块 11: 全局通知系统 (Notification Center)
+         */
+        const NotificationCenter = {
+            show({ title, message, type = 'info', duration = 4000 }) {
+                const container = document.getElementById('notification-container');
+                if (!container) return;
+
+                const notify = document.createElement('div');
+                notify.className = `notification`;
+
+                const icons = { info: 'ℹ️', success: '✅', warning: '⚠️', error: '❌' };
+                const icon = icons[type] || icons.info;
+
+                notify.innerHTML = `
+                    <div class="notify-header">
+                        <span>${icon} ${title}</span>
+                        <span class="notify-close" title="关闭">×</span>
+                    </div>
+                    <div class="notify-body">${message}</div>
+                `;
+
+                container.appendChild(notify);
+
+                let timeoutId;
+                const closeNotify = () => {
+                    notify.classList.add('notify-fade-out');
+                    setTimeout(() => notify.remove(), 200);
+                };
+
+                notify.querySelector('.notify-close').onclick = closeNotify;
+
+                const startTimer = () => {
+                    if (duration > 0) timeoutId = setTimeout(closeNotify, duration);
+                };
+                const stopTimer = () => clearTimeout(timeoutId);
+
+                notify.onmouseenter = stopTimer;
+                notify.onmouseleave = startTimer;
+
+                startTimer();
+            }
+        };
+
+        /**
+                 * 模块 12: 全局模态弹窗管理器 (Modal Manager)
+                 */
+        const ModalManager = {
+            openModal({ title, bodyHtml, buttons }) {
+                const container = document.getElementById('modal-container');
+                if (!container) return;
+
+                let btnHtml = buttons.map((b, i) => `<button id="modal-btn-${i}" class="btn ${b.type || ''}">${b.text}</button>`).join('');
+
+                container.innerHTML = `
+                    <dialog data-dialog-scope="system">
+                        <div class="dialog-header">
+                            <span>${title}</span>
+                            <span class="dialog-close" id="modal-close-x">X</span>
+                        </div>
+                        <div class="dialog-body">${bodyHtml}</div>
+                        <div class="dialog-footer">${btnHtml}</div>
+                    </dialog>
+                `;
+
+                const dialog = container.querySelector('dialog');
+                document.getElementById('modal-close-x').onclick = () => this.closeModal();
+                buttons.forEach((b, i) => {
+                    document.getElementById(`modal-btn-${i}`).onclick = () => {
+                        if (b.onClick) b.onClick(container);
+                    };
+                });
+
+                if (dialog) {
+                    try {
+                        dialog.showModal();
+                    } catch (e) {
+                        dialog.setAttribute('open', '');
+                    }
+                }
+            },
+
+            closeModal() {
+                const container = document.getElementById('modal-container');
+                if (!container) return;
+                container.querySelectorAll('dialog').forEach(dialog => {
+                    if (dialog.open) {
+                        try { dialog.close(); } catch (e) { dialog.removeAttribute('open'); }
+                    }
+                });
+                container.innerHTML = '';
+            },
+
+            confirm(title, message) {
+                return new Promise(resolve => {
+                    this.openModal({
+                        title: title,
+                        bodyHtml: `<div>${message}</div>`,
+                        buttons: [
+                            { text: '取消', onClick: () => { this.closeModal(); resolve(false); } },
+                            { text: '确定', type: 'btn-primary', onClick: () => { this.closeModal(); resolve(true); } }
+                        ]
+                    });
+                });
+            },
+
+            prompt(title, message, defaultValue = '') {
+                return new Promise(resolve => {
+                    this.openModal({
+                        title: title,
+                        bodyHtml: `
+                            <div class="flex-col">
+                                <div>${message}</div>
+                                <input type="text" id="modal-prompt-input" class="input" value="${defaultValue}">
+                            </div>
+                        `,
+                        buttons: [
+                            { text: '取消', onClick: () => { this.closeModal(); resolve(null); } },
+                            {
+                                text: '确定', type: 'btn-primary', onClick: () => {
+                                    const val = document.getElementById('modal-prompt-input').value;
+                                    this.closeModal();
+                                    resolve(val);
+                                }
+                            }
+                        ]
+                    });
+
+                    setTimeout(() => {
+                        const input = document.getElementById('modal-prompt-input');
+                        if (input) { input.focus(); input.select(); }
+                    }, 50);
+                });
+            }
+        };
+
+        /**
+         * 模块 14: 应用冷启动与外壳路由 (App Router)
+         */
+        const AppRouter = {
+            launchApp(appId) {
+                toggleStartMenu(false);
+
+                const sysApp = Config.System.systemApps[appId];
+                if (sysApp) {
+                    const tpl = document.getElementById(sysApp.templateId).innerHTML;
+                    WindowManager.createWindow(appId, sysApp.name, tpl, sysApp.icon);
+                    if (appId === 'app-settings') UIManager.loadSettingsToUI();
+                    return;
+                }
+
+                const meta = ContextStore.registry[appId];
+                if (!meta) {
+                    NotificationCenter.show({ title: '错误', message: 'App 不存在!', type: 'error' });
+                    return;
+                }
+
+                const session = ContextStore.sessions[appId];
+                if (session && session.htmlSnapshot) {
+                    WindowManager.createWindow(appId, meta.name, session.htmlSnapshot, meta.icon);
+                    // [修复] 冷启动恢复快照后，必须唤醒挂载缓存中的图片
+                    const container = document.getElementById(`content-${appId}`);
+                    if (container) UIManager.handleImageHydration(appId, container);
+                } else {
+                    this._coldStartApp(appId, meta);
+                }
+            },
+            _coldStartApp(appId, meta) {
+                WindowManager.createWindow(appId, meta.name, `<div id="root-${appId}" class="status-panel">正在为 ${meta.name} 初始化界面...</div>`, meta.icon);
+
+                const sysPrompt = PromptBuilder.buildSystemPrompt(appId);
+
+                AIScheduler.enqueueText(() => {
+                    return new Promise((resolve) => {
+                        let previewTimer = null;
+                        let previewHTML = '';
+                        const container = document.getElementById(`content-${appId}`);
+                        const onChunk = Config.LLM.useStreaming && container ? (delta, fullText) => {
+                            previewHTML = fullText || previewHTML + delta;
+                            if (previewTimer) return;
+                            previewTimer = setTimeout(() => {
+                                previewTimer = null;
+                                const liveContainer = document.getElementById(`content-${appId}`);
+                                if (liveContainer && previewHTML.trim()) {
+                                    liveContainer.innerHTML = previewHTML;
+                                }
+                            }, 100);
+                        } : null;
+
+                        APIGateway.callModel(sysPrompt, "Initialize the first screen.", onChunk,
+                            (html) => {
+                                if (previewTimer) {
+                                    clearTimeout(previewTimer);
+                                    previewTimer = null;
+                                }
+                                const container = document.getElementById(`content-${appId}`);
+                                if (container) {
+                                    const applied = DOMPatcher.applyPatch(container, html, {
+                                        allowFullMount: true,
+                                        onBeforeMount: (newNode) => {
+                                            const imagesToPatch = newNode.tagName === 'IMG' ? [newNode] : newNode.querySelectorAll('img[data-prompt]');
+                                            for (const img of imagesToPatch) {
+                                                if (img.hasAttribute('data-prompt')) {
+                                                    img.src = ImageService._createFallbackSVG('准备排队...');
+                                                }
+                                            }
+                                        }
+                                    });
+                                    if (applied) {
+                                        // [修复残留] 冷启动快照也必须经过净化，剔除 src，保持 LocalStorage 纯净！
+                                        ContextStore.saveSession(appId, Utils.getPurifiedHTML(container), null, null);
+                                        UIManager.handleImageHydration(appId, container);
+                                    }
+                                }
+                                resolve();
+                            },
+                            (err) => {
+                                if (previewTimer) {
+                                    clearTimeout(previewTimer);
+                                    previewTimer = null;
+                                }
+                                NotificationCenter.show({ title: '应用初始化失败', message: err, type: 'error', duration: 8000 });
+                                resolve();
+                            }
+                        );
+                    });
+                }, TASK_PRIORITY.URGENT);
+            }
+        };
+
+
+        /**
+         * 全局 Helper 函数
+         */
+        function toggleStartMenu(force) {
+            const menu = document.getElementById('start-menu');
+            if (force === false) { menu.style.display = 'none'; return; }
+            menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        window.switchSettingsTab = (tabId) => {
+            document.querySelectorAll('#settings-tabs button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.settings-pane').forEach(p => p.classList.remove('active'));
+            const tabBtn = document.getElementById(`tab-btn-${tabId}`);
+            const pane = document.getElementById(`pane-${tabId}`);
+            if (tabBtn) tabBtn.classList.add('active');
+            if (pane) pane.classList.add('active');
+        };
+
+        function saveSettings(isAuto = false) {
+            Config.UIBindings.forEach(bind => {
+                const el = document.getElementById(bind.id);
+                if (el) {
+                    Config[bind.section][bind.key] = bind.type === 'boolean' ? el.value === "true" : el.value;
+                }
+            });
+
+            StorageManager.Sync.save('vibe_config', Config);
+        }
+
+        async function clearAllCacheAndReset() {
+            if (await ModalManager.confirm('恢复出厂设置', "警告：将清除 VibeOS 的所有应用数据，系统将重置为初始状态。是否继续？")) {
+                await StorageManager.BlobCache.clearAll();
+                StorageManager.Sync.clearData(Config.StorageKeys);
+                location.reload();
+            }
+        }
+
+        function doAppSearch() {
+            const query = document.getElementById('app-search-input').value;
+            if (!query) return;
+            const resContainer = document.getElementById('search-results');
+            resContainer.innerHTML = '<div class="status-panel">搜索中...</div>';
+
+            const settingsBlock = SettingsManager.getCombinedSettingString();
+            const memoryBlock = MemoryManager.longTermMemory.length > 0 ? `[长期记忆]\n${MemoryManager.longTermMemory.join('\n')}` : '';
+            const count = Config.System.searchResultCount || 3;
+
+            const sysPrompt = `${settingsBlock ? settingsBlock + '\n\n' : ''}${memoryBlock ? memoryBlock + '\n\n' : ''}[关键指令]
+你是一个操作系统的应用搜索引擎。请根据用户输入的搜索内容，仅返回一个包含 ${count} 个应用的有效 JSON 数组，不要输出任何其他文本。
+格式为：[{ "name": "应用名称", "desc": "对于应用功能的一句话描述", "icon": "🌟", "publisher": "发行商名称" }]。
+
+遵守下述规则：
+1. 返回的应用应与用户的输入相关性强，应用的名称或描述最好包括或直接就是用户搜索的关键词。
+2. 不同应用的功能之间应该存在不影响搜索相关性的差异。从上到下，应用从强相关变成弱相关，但不会毫不相干。
+3. icon、publisher应根据应用性质和背景设定智能适配。
+4. 使用简体中文。`;
+
+            APIGateway.callModel(sysPrompt, `Query: ${query}`, null,
+
+                (jsonStr) => {
+                    try {
+                        const cleanJson = jsonStr.replace(/```json/g, '').replace(/```/g, '').trim();
+                        const apps = JSON.parse(cleanJson);
+                        resContainer.innerHTML = '';
+                        apps.forEach(app => {
+                            const btn = document.createElement('div');
+                            btn.className = 'start-menu-item list-item-bordered';
+                            btn.innerHTML = `<div><strong>${app.icon || '💿'} ${app.name}</strong><br><span class="text-muted">${app.desc}<br>发行商: ${app.publisher || '未知'}</span></div>`;
+                            btn.onclick = () => {
+                                const appId = 'app-' + Utils.generateUUID();
+                                ContextStore.registerApp(appId, app.name, app.desc, app.icon, app.publisher, Date.now());
+                                AppRouter.launchApp(appId);
+                                WindowManager.closeWindow('win-app-search');
+                            };
+                            resContainer.appendChild(btn);
+                        });
+                    } catch (e) {
+                        resContainer.innerHTML = `<div class="status-panel text-danger">Parse Error. Try again.</div><pre>${jsonStr}</pre>`;
+                    }
+                },
+                (err) => resContainer.innerHTML = `<div class="status-panel text-danger">Error: ${err}</div>`
+            );
+        }
+
+        window.onload = () => {
+            // 1. 加载核心配置
+            const savedConfig = StorageManager.Sync.load('vibe_config', null);
+            if (savedConfig) {
+                // 备份不可变的系统核心级配置，防止被旧版本的本地缓存污染
+                const coreSystemApps = Config.System.systemApps;
+                const coreTemplates = Config.System.SETTING_TEMPLATES;
+
+                Object.assign(Config.LLM, savedConfig.LLM || {});
+                Object.assign(Config.Image, savedConfig.Image || {});
+                Object.assign(Config.System, savedConfig.System || {});
+
+                // 恢复核心配置
+                Config.System.systemApps = coreSystemApps;
+                Config.System.SETTING_TEMPLATES = coreTemplates;
+            }
+            if (typeof window.generateRaw === 'function' && typeof window.eventOn === 'function') {
+                Config.LLM.apiMode = 'SILLYTAVERN';
+            }
+
+            // 2. 初始化各子系统
+            ThemeManager.init();
+            SettingsManager.init();
+            MemoryManager.init();
+            ContextStore.loadRegistry();
+            EventDelegator.init();
+
+            console.log("VibeOS Booted.");
+        };
+
+    </script>
+</body>
+
+</html>
+```
