@@ -2,7 +2,7 @@
 
 一个基于 Microsoft Build 2026 Vibe OS 演示概念复刻并继续扩展的单页 HTML AI 操作系统沙盒。
 
-![VibeOS Preview](./VibeOS.png)
+![VibeOS Preview](./预览.png)
 
 ## 简介
 
