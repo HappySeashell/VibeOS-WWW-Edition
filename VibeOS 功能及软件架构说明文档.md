@@ -597,7 +597,7 @@ AI 首屏应优先输出：
 
 `ComponentRuntime` 统一管理 AI 生成 UI 的预置行为：
 
-- `tool-bar` / `tool-item` / `tool-popup` / `tool-row` / `tool-divider`：工具栏与下拉菜单。
+- `tool-bar` / `tool-item` / `tool-popup` / `tool-row` / `tool-divider` / `tool-spacer`：工具栏与下拉菜单。
 - `tree-view`：树状菜单展开/折叠。
 - `tab-view`：基于 `role="tablist"`、`role="tab"`、`role="tabpanel"` 的标签页切换。
 - `dialog`：应用内弹窗自动打开。
@@ -609,6 +609,7 @@ AI 仍然不能输出 `<script>` 或 JavaScript，所有组件行为都由系统
 - 按钮、输入框、下拉框、文本框、图片、进度条、菜单行、状态字段等实体控件不承担外边距。
 - 布局、间距、滚动、分栏由外层容器或受限 inline style 控制。
 - AI 允许 inline style 处理布局属性，但不得内联修改颜色、背景、边框颜色、阴影、字体、圆角、层级或绝对/固定定位等视觉主题属性。
+- 主内容滚动区域应使用 `flex:1; min-height:0; overflow:auto` 这类布局属性表达，不使用系统设置专用的滚动限高样式。
 
 ### 8.4 DOM Patch 策略
 
@@ -628,7 +629,7 @@ AI 仍然不能输出 `<script>` 或 JavaScript，所有组件行为都由系统
 
 ### 8.6 冷启动流式预览
 
-开启流式传输时，用户应用冷启动会将累积 HTML 节流写入容器作为临时预览。完整响应结束后，系统再正式挂载 HTML、初始化组件、挂载图片并保存快照。后续交互 diff 不做真实 DOM 流式 patch。
+即使开启流式传输，用户应用冷启动也不会把半截 HTML 写入真实 DOM。系统只在完整响应结束后正式挂载 HTML、初始化组件、挂载图片并保存快照。后续交互 diff 同样不做真实 DOM 流式 patch。
 
 ---
 

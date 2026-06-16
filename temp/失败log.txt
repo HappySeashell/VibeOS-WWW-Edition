@@ -1,0 +1,889 @@
+Chat Completion request: {
+  messages: [
+    {
+      role: 'system',
+      content: '[当前应用]\n' +
+        '应用名称：谷歌浏览器 (Chrome)\n' +
+        '应用描述：全球最受欢迎的带标签页的网页浏览器，支持强大的扩展功能与多设备同步。\n' +
+        '应用主容器 ID：content-app-id-os358rfce\n' +
+        '容器物理环境：这是一个原生具有 "display: flex; flex-direction: column; overflow: hidden; padding: 0;" 属性的刚性无边距画板。\n' +
+        '\n' +
+        '[关键指令]\n' +
+        '你在为一个操作系统中的应用初始化 UI 界面。\n' +
+        '你可以且仅可以使用以下 HTML 标签及预设 CSS 类名构建 UI：\n' +
+        '- <button>，可用类名 .btn, .btn-primary, .btn-success, .btn-warning, .btn-danger: 按钮及各类语义化状态\n' +
+        '- <input>，可用类名 .input, .checkbox, .radio: 文本输入框、复选框、单选框\n' +
+        '- <textarea>，可用类名 .textarea: 多行文本输入框\n' +
+        '- <select>，可用类名 .select: 下拉选择框\n' +
+        '- <label>，可用类名 .label: 表单标签\n' +
+        '- <fieldset>，可用类名 .fieldset: 表单、设置、筛选分组容器\n' +
+        '- <legend>，可用类名 .legend: fieldset 分组标题\n' +
+        '- <tool-bar>: 应用顶部工具栏/菜单栏，位于 app-layout 外，可包含 button、tool-item\n' +
+        '- <tool-item>: 工具栏下拉菜单项，可包含 tool-popup\n' +
+        '- <tool-popup>: tool-item 内部下拉菜单容器，展开/关闭由系统预置行为处理\n' +
+        '- <tool-row>: 下拉菜单命令行，可点击，必须有唯一 id\n' +
+        '- <tool-divider>: 下拉菜单分隔线，无外边距\n' +
+        '- <tool-spacer>: 工具栏弹性占位，替代 <div style="flex:1"> 分隔左右工具区\n' +
+        '- <app-layout>: 应用主内容区，位于 tool-bar 与 status-bar 之间，预置 flex:1、纵向布局和 overflow hidden\n' +
+        '- <split-view>: 分栏布局容器，可用 direction="vertical" 表示上下分栏\n' +
+        '- <side-panel>: 侧边栏/导航树容器\n' +
+        '- <status-bar>: 应用底部状态栏，位于 app-layout 外\n' +
+        '- <status-field>: 状态栏字段\n' +
+        '- <tree-view>: 树状菜单，展开/折叠由系统预置行为处理\n' +
+        '- <tab-view>: 标签页容器，支持 role=tablist/tab/tabpanel 自动切换\n' +
+        '- <switch-control>: 开关控件，使用 aria-checked 表示状态，变更只缓冲操作\n' +
+        '- <segment-control>: 分段选择器，内含 segment-option，切换只更新本地状态\n' +
+        '- <segment-option>: segment-control 的单个选项，使用 value/selected\n' +
+        '- <dialog>: 应用内弹窗，系统会自动打开并处理底部确认/取消行为\n' +
+        '- <ul/ol/div>，可用类名 .list: 列表外层容器\n' +
+        '- <div>，可用类名 .scroll-area, .scroll-area-lg: 滚动面板，不自带高度限制，需要时由布局容器控制空间\n' +
+        '- <li/div>，可用类名 .list-item, .list-item-bordered: 列表项（带边框修饰）\n' +
+        '- <div>，可用类名 .card: 独立卡片容器\n' +
+        '- <hr/div>，可用类名 .divider: 分割线\n' +
+        '- <h1/div>，可用类名 .h1: 一级大标题\n' +
+        '- <h2/div>，可用类名 .h2: 二级小标题\n' +
+        '- <span/div>，可用类名 .text-muted, .text-danger, .text-break: 文本状态修饰（置灰、警告、强制换行）\n' +
+        '- <span/div>，可用类名 .badge: 提示徽章/小标签\n' +
+        '- <img>，可用类名 .img, .img-round: 图片（img-round用于圆形图片）\n' +
+        '- <progress>，可用类名 .progress: 进度条\n' +
+        '- <div>，可用类名 .status-panel: 居中的状态或空数据提示面板\n' +
+        '\n' +
+        '遵守下述规则：\n' +
+        '1. 仅输出 HTML，不要有任何对话文本、Markdown 代码块（如 ```html）或心理活动。\n' +
+        '2. 仅输出主窗口内容的内部 HTML，内容尽可能丰富。不要生成任何登录、注册或加载中的界面，假设用户已经登录。首屏推荐且优先使用如下应用结构：<tool-bar id="...">...</tool-bar><app-layout id="...">...</app-layout><status-bar id="...">...</status-bar>。tool-bar 和 status-bar 是应用外壳，必须位于 app-layout 外；app-layout 是主内容区，系统已预置 flex:1、纵向布局和 overflow hidden，不要用普通 div 代替 app-layout。\n' +
+        '3. 实体控件（按钮、输入框、下拉框、文本框、图片、进度条、菜单行、状态字段等）不负责外边距；间距、分栏、滚动、对齐交给外层容器处理。\n' +
+        '4. 允许使用内联 style 处理局部布局、空间和滚动。允许属性：display、flex、flex-direction、gap、grid-template-*、grid-column/row、align-*、justify-*、padding、margin、width、height、min/max-width/height、overflow、box-sizing、order。禁止内联修改视觉主题或层级：color、background、border-color、box-shadow、font-family、border-radius、z-index、position:absolute/fixed、动画、滤镜。\n' +
+        "5. 可交互元素、会变化元素、图片、以及未来可能作为 Diff 替换目标的容器必须具备唯一 'id' 属性。纯展示叶子节点可以没有 id。\n" +
+        '6. tool-bar 中的下拉菜单标题直接写在 tool-item 文本里，不要再包 button；左右工具区分隔使用 <tool-spacer>。\n' +
+        '7. tree-view 必须使用 ul/li 树结构；有子级的节点由系统展开/折叠，叶子节点可作为导航命令触发更新。\n' +
+        '8. 滚动区域可使用 .scroll-area；该类不自带高度限制，空间由外层布局或必要的布局 style 控制。顶部区域使用 tool-bar，底部信息使用 status-bar。\n' +
+        '9. tab-view 中每个 tab 都必须有对应的 role="tabpanel" 内容；推荐写 aria-controls，也可用 tab-xxx / panel-xxx 的 ID 对应。切换标签页由系统本地处理，不触发更新。\n' +
+        '10. 表单控件（checkbox、radio、select、switch-control、segment-control 等）变更只记录状态，不会立即更新 UI；涉及筛选、提交、应用设置时，必须同时提供明确的按钮触发更新。\n' +
+        '11. 如果需要弹窗，输出普通 <dialog id="...">，内部使用 .dialog-header、.dialog-body、.dialog-footer 组织结构。打开弹窗时只返回新增 dialog 节点；弹窗确认/应用后再返回受影响的主内容节点。dialog-footer 中的确认/应用按钮会触发一次界面更新，取消/关闭按钮只关闭弹窗。\n' +
+        '12. 如果需要展示图像，格式必须为：<img id="unique-img-id" class="img" data-prompt="图片描述" src="">。将 src 留空，系统将拦截它并自动填充图像。图片描述为：详细特征标签，以英文逗号分隔。可指定尺寸，例如：832x1216|masterpiece, highly detailed, cyberpunk city'
+    },
+    { role: 'user', content: 'Initialize the first screen.' }
+  ],
+  prompt: undefined,
+  model: 'gemini-3.1-pro-preview',
+  temperature: 0.8,
+  max_tokens: 32000,
+  max_completion_tokens: undefined,
+  stream: false,
+  presence_penalty: 0,
+  frequency_penalty: 0,
+  top_p: 0.6,
+  top_k: undefined,
+  stop: undefined,
+  logit_bias: undefined,
+  seed: undefined,
+  n: undefined,
+  logprobs: undefined,
+  top_logprobs: undefined
+}
+Chat Completion response: {
+  id: '4e342090-c458-43da-9b86-fc2b28b76305',
+  object: 'chat.completion',
+  created: 1781533320,
+  model: 'gemini-3.1-pro-preview',
+  choices: [
+    {
+      index: 0,
+      message: {
+        role: 'assistant',
+        content: '<tool-bar id="chrome-toolbar" style="padding: 4px 8px; gap: 4px; align-items: center;">\n' +
+          '    <button id="btn-nav-back" class="btn">←</button>\n' +
+          '    <button id="btn-nav-forward" class="btn">→</button>\n' +
+          '    <button id="btn-nav-refresh" class="btn">↻</button>\n' +
+          '    <button id="btn-nav-home" class="btn">🏠</button>\n' +
+          '    <div id="address-bar-container" style="display: flex; flex: 1; padding: 0 8px;">\n' +
+          '        <input id="input-address-bar" class="input" value="" placeholder="Search Google or type a URL" style="flex: 1; width: 100%;" />\n' +
+          '    </div>\n' +
+          '    <button id="btn-ext" class="btn">🧩</button>\n' +
+          '    <button id="btn-user-profile" class="btn">👤</button>\n' +
+          '    <tool-item id="menu-browser">\n' +
+          '        ⋮\n' +
+          '        <tool-popup id="popup-browser-menu">\n' +
+          '            <tool-row id="menu-item-new-tab">New tab</tool-row>\n' +
+          '            <tool-row id="menu-item-new-window">New window</tool-row>\n' +
+          '            <tool-divider></tool-divider>\n' +
+          '            <tool-row id="menu-item-history">History</tool-row>\n' +
+          '            <tool-row id="menu-item-downloads">Downloads</tool-row>\n' +
+          '            <tool-row id="menu-item-bookmarks">Bookmarks</tool-row>\n' +
+          '            <tool-divider></tool-divider>\n' +
+          '            <tool-row id="menu-item-settings">Settings</tool-row>\n' +
+          '            <tool-row id="menu-item-help">Help</tool-row>\n' +
+          '        </tool-popup>\n' +
+          '    </tool-item>\n' +
+          '</tool-bar>\n' +
+          '<app-layout id="chrome-content-area">\n' +
+          '    <div id="new-tab-page" class="scroll-area" style="display: flex; flex-direction: column; align-items: center; height: 100%; padding: 24px; box-sizing: border-box;">\n' +
+          '        <div id="ntp-top-spacer" style="height: 10vh; min-height: 40px;"></div>\n' +
+          '        <div id="ntp-logo-wrap" style="margin-bottom: 32px; display: flex; justify-content: center;">\n' +
+          '            <img id="img-main-logo" class="img" data-prompt="Google logo typography, classic colors, clean white background" style="width: 272px; height: 92px;" src="" />\n' +
+          '        </div>\n' +
+          '        <div id="ntp-search-wrap" style="display: flex; width: 100%; max-width: 584px; margin-bottom: 32px;">\n' +
+          '            <input id="input-ntp-search" class="input" placeholder="Search Google or type a URL" style="flex: 1; padding: 12px 16px;" />\n' +
+          '        </div>\n' +
+          '        <div id="ntp-shortcuts-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 500px; width: 100%;">\n' +
+          '            <div id="shortcut-item-1" style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px;">\n' +
+          '                <div id="sc-icon-wrap-1" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">\n' +
+          '                     <img id="img-shortcut-yt" class="img img-round" data-prompt="YouTube icon logo, flat design" style="width: 24px; height: 24px;" src="" />\n' +
+          '                </div>\n' +
+          '                <span id="sc-text-1" class="text-muted">YouTube</span>\n' +
+          '            </div>\n' +
+          '            <div id="shortcut-item-2" style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px;">\n' +
+          '                <div id="sc-icon-wrap-2" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">\n' +
+          '                     <img id="img-shortcut-gm" class="img img-round" data-prompt="Gmail icon logo, flat design" style="width: 24px; height: 24px;" src="" />\n' +
+          '                </div>\n' +
+          '                <span id="sc-text-2" class="text-muted">Gmail</span>\n' +
+          '            </div>\n' +
+          '            <div id="shortcut-item-3" style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px;">\n' +
+          '                <div id="sc-icon-wrap-3" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">\n' +
+          '                     <img id="img-shortcut-gh" class="img img-round" data-prompt="GitHub icon logo, flat design" style="width: 24px; height: 24px;" src="" />\n' +
+          '                </div>\n' +
+          '                <span id="sc-text-3" class="text-muted">GitHub</span>\n' +
+          '            </div>\n' +
+          '            <div id="shortcut-item-add" style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px;">\n' +
+          '                <div id="sc-icon-wrap-add" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">\n' +
+          '                     <button id="btn-add-sc" class="btn" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">+</button>\n' +
+          '                </div>\n' +
+          '                <span id="sc-text-add" class="text-muted">Add shortcut</span>\n' +
+          '            </div>\n' +
+          '        </div>\n' +
+          '        <div id="ntp-bottom-spacer" style="flex: 1; min-height: 40px;"></div>\n' +
+          '        <div id="ntp-footer" style="display: flex; justify-content: flex-end; width: 100%; padding-top: 16px;">\n' +
+          '            <button id="btn-customize-page" class="btn" style="display: flex; align-items: center; gap: 8px;">\n' +
+          '                <span>✏️</span> Customize Chrome\n' +
+          '            </button>\n' +
+          '        </div>\n' +
+          '    </div>\n' +
+          '</app-layout>\n' +
+          '<status-bar id="chrome-status-bar">\n' +
+          '    <status-field id="sf-hover-url"></status-field>\n' +
+          '</status-bar>',
+        reasoning_content: '# **My Thought Process for Designing the Chrome First Screen**\n' +
+          '\n' +
+          `Alright, let's break down how I approached this. The core task is to initialize the very first visual representation of Google Chrome, specifically the "New Tab" page, using a very constrained set of HTML elements and styling rules. I need to think like the browser's UI layer is being built from scratch.\n` +
+          '\n' +
+          'First, I dissected the request:\n' +
+          '*   **The Application:** Google Chrome. This immediately brings to mind its distinct UI elements: the toolbar at the top with navigation and the address bar, the main content area, and a subtle status bar at the bottom.\n' +
+          '*   **The Goal:** Initialize the first screen. For Chrome, this means simulating the familiar "New Tab" page. It needs to be functional and recognizable.\n' +
+          "*   **The Constraints:** This is the crucial part. I'm restricted to specific HTML tags like `<tool-bar>`, `<app-layout>`, `<status-bar>`, and others for internal structure. Most importantly, the inline styling is heavily restricted. I can *only* use properties explicitly listed in the allowed set: `display`, `flex`, `flex-direction`, `gap`, `grid-template-*`, `grid-column/row`, `align-*`, `justify-*`, `padding`, `margin`, `width`, `height`, `min/max-width/height`, `overflow`, `box-sizing`. Anything else, especially visual styling like `color`, `background`, `border-color`, `border-radius`, or even `font-size`, is forbidden in inline styles. I also need unique IDs for every significant element. No markdown, no conversational filler.\n" +
+          '\n' +
+          'Given these constraints, I started by mapping the Chrome UI to the allowed structural tags:\n' +
+          '\n' +
+          "1.  **The `<tool-bar>`:** This will house the browser's primary navigation and controls.\n" +
+          "    *   I'll need standard navigation buttons: Back, Forward, Refresh, Home. These will be `<button>` elements.\n" +
+          "    *   The Address Bar is a key component. It needs to be flexible and occupy the remaining space. I'll use a `div` as a container for the input field, leveraging flexbox to make it stretch. The input itself will be a simple `<input>` with a placeholder.\n" +
+          "    *   On the right side, I'll place buttons for Extensions, the User Profile, and the main Menu. The menu will use `<tool-item>` and `<tool-popup>` with `<tool-row>`s for menu items and `<tool-divider>` for separation.\n" +
+          '\n' +
+          '2.  **The `<app-layout>`:** This is the main content area. For the "New Tab" page, this means simulating the Google search experience.\n' +
+          "    *   The layout needs to be centered and vertically balanced. I'll use flexbox for this: `display: flex`, `flex-direction: column`, `align-items: center`, `justify-content: center`, and `height: 100%`.\n" +
+          "    *   **Google Logo:** An `<img>` tag is perfect here. It needs a `data-prompt` attribute as specified, and its `src` will be empty initially, waiting for rendering logic to fill it. I'll define its `width` and `height` using allowed styles.\n" +
+          "    *   **Search Box:** A large `<input>` field, again within a flex container to manage its width and spacing. I'll use `padding` and `max-width` to control its appearance.\n" +
+          "    *   **Shortcuts:** This is a good candidate for CSS Grid. I'll define a `div` for the grid container with `grid-template-columns` and `gap`. Each shortcut will be a smaller `div` containing an icon (another `<img>`) and text (`<span>`). The icons need to be circular, but since `border-radius` is forbidden inline, I'll rely on a class (`.img-round`) and perhaps adjust the `width` and `height` of a wrapper `div` to achieve a circular appearance if the class isn't provided in the environment. For now, I'll make the icon wrapper `div` square and `display: flex`, `align-items: center`, `justify-content: center`.\n" +
+          '    *   **Customize Button:** A button at the bottom, again, within a flex layout to ensure it aligns to the right.\n' +
+          '\n' +
+          '3.  **The `<status-bar>`:** This is the simplest. A `<status-bar>` containing a `<status-field>` is sufficient to represent where link hover information or loading statuses would appear.\n' +
+          '\n' +
+          'With this structure in mind, I began drafting the HTML, meticulously assigning unique IDs to every interactive element and container that might be referenced later. I paid extremely close attention to the allowed inline style properties.\n' +
+          '\n' +
+          "*   For the toolbar, I used `gap` for spacing between buttons and `align-items: center`. The address bar's container is `display: flex` and `flex: 1` to make it take up available space.\n" +
+          "*   In the app layout, I'm heavily using `display: flex` and `flex-direction: column` for vertical stacking and `align-items: center` for horizontal centering. `padding` and `margin` are used for spacing. For the logo and search bar, `width` and `max-width` control their size.\n" +
+          '*   The shortcuts section uses `display: grid` and `grid-template-columns: repeat(4, 1fr)` to create the four-column layout. `gap` ensures spacing between shortcuts.\n' +
+          '*   I used `flex: 1` on a spacer `div` (`#ntp-bottom-spacer`) to push the "Customize Chrome" button to the very bottom of the main content area, effectively using available vertical space without explicit positioning.\n' +
+          '\n' +
+          'I also noted the `data-prompt` attribute requirement for images, which is a specific instruction for how the image generation/retrieval process should work.\n' +
+          '\n' +
+          'The biggest challenge was strictly adhering to the limited inline style properties. This meant foregoing common visual enhancements like rounded corners or specific background colors directly in the HTML. I had to rely solely on structural arrangement and the dimensions. For instance, making elements appear "centered" or "spaced out" purely through flexbox and grid properties. The absence of `font-size` meant that text sizing would default or rely on inherited styles if any were present in the broader context, but within this snippet, it\'s minimal.\n' +
+          '\n' +
+          "This iterative process of mapping requirements, sketching structure, drafting HTML, and then meticulously checking against every single constraint, especially the styling limitations and ID uniqueness, led to the final HTML output. It's about building the foundational layout and structure precisely as requested, without any embellishments that fall outside the defined rules.\n" +
+          '\n'
+      },
+      finish_reason: 'stop'
+    }
+  ],
+  usage: {
+    prompt_tokens: 1696,
+    completion_tokens: 1614,
+    total_tokens: 8902,
+    completion_tokens_details: { reasoning_tokens: 5592 }
+  }
+}
+Applying custom prompt post-processing of type strict
+Chat Completion request: {
+  messages: [
+    {
+      role: 'system',
+      content: '[当前应用]\n' +
+        '应用名称：谷歌浏览器 (Chrome)\n' +
+        '应用描述：全球最受欢迎的带标签页的网页浏览器，支持强大的扩展功能与多设备同步。\n' +
+        '应用主容器 ID：content-app-id-os358rfce\n' +
+        '容器物理环境：这是一个原生具有 "display: flex; flex-direction: column; overflow: hidden; padding: 0;" 属性的刚性无边距画板。\n' +
+        '\n' +
+        '[关键指令]\n' +
+        '你在为一个操作系统中的应用初始化 UI 界面。\n' +
+        '你可以且仅可以使用以下 HTML 标签及预设 CSS 类名构建 UI：\n' +
+        '- <button>，可用类名 .btn, .btn-primary, .btn-success, .btn-warning, .btn-danger: 按钮及各类语义化状态\n' +
+        '- <input>，可用类名 .input, .checkbox, .radio: 文本输入框、复选框、单选框\n' +
+        '- <textarea>，可用类名 .textarea: 多行文本输入框\n' +
+        '- <select>，可用类名 .select: 下拉选择框\n' +
+        '- <label>，可用类名 .label: 表单标签\n' +
+        '- <fieldset>，可用类名 .fieldset: 表单、设置、筛选分组容器\n' +
+        '- <legend>，可用类名 .legend: fieldset 分组标题\n' +
+        '- <tool-bar>: 应用顶部工具栏/菜单栏，位于 app-layout 外，可包含 button、tool-item\n' +
+        '- <tool-item>: 工具栏下拉菜单项，可包含 tool-popup\n' +
+        '- <tool-popup>: tool-item 内部下拉菜单容器，展开/关闭由系统预置行为处理\n' +
+        '- <tool-row>: 下拉菜单命令行，可点击，必须有唯一 id\n' +
+        '- <tool-divider>: 下拉菜单分隔线，无外边距\n' +
+        '- <tool-spacer>: 工具栏弹性占位，替代 <div style="flex:1"> 分隔左右工具区\n' +
+        '- <app-layout>: 应用主内容区，位于 tool-bar 与 status-bar 之间，预置 flex:1、纵向布局和 overflow hidden\n' +
+        '- <split-view>: 分栏布局容器，可用 direction="vertical" 表示上下分栏\n' +
+        '- <side-panel>: 侧边栏/导航树容器\n' +
+        '- <status-bar>: 应用底部状态栏，位于 app-layout 外\n' +
+        '- <status-field>: 状态栏字段\n' +
+        '- <tree-view>: 树状菜单，展开/折叠由系统预置行为处理\n' +
+        '- <tab-view>: 标签页容器，支持 role=tablist/tab/tabpanel 自动切换\n' +
+        '- <switch-control>: 开关控件，使用 aria-checked 表示状态，变更只缓冲操作\n' +
+        '- <segment-control>: 分段选择器，内含 segment-option，切换只更新本地状态\n' +
+        '- <segment-option>: segment-control 的单个选项，使用 value/selected\n' +
+        '- <dialog>: 应用内弹窗，系统会自动打开并处理底部确认/取消行为\n' +
+        '- <ul/ol/div>，可用类名 .list: 列表外层容器\n' +
+        '- <div>，可用类名 .scroll-area, .scroll-area-lg: 滚动面板，不自带高度限制，需要时由布局容器控制空间\n' +
+        '- <li/div>，可用类名 .list-item, .list-item-bordered: 列表项（带边框修饰）\n' +
+        '- <div>，可用类名 .card: 独立卡片容器\n' +
+        '- <hr/div>，可用类名 .divider: 分割线\n' +
+        '- <h1/div>，可用类名 .h1: 一级大标题\n' +
+        '- <h2/div>，可用类名 .h2: 二级小标题\n' +
+        '- <span/div>，可用类名 .text-muted, .text-danger, .text-break: 文本状态修饰（置灰、警告、强制换行）\n' +
+        '- <span/div>，可用类名 .badge: 提示徽章/小标签\n' +
+        '- <img>，可用类名 .img, .img-round: 图片（img-round用于圆形图片）\n' +
+        '- <progress>，可用类名 .progress: 进度条\n' +
+        '- <div>，可用类名 .status-panel: 居中的状态或空数据提示面板\n' +
+        '\n' +
+        '遵守下述规则：\n' +
+        '1. 仅输出 HTML，不要有任何对话文本、Markdown 代码块（如 ```html）或心理活动。\n' +
+        '2. 仅输出主窗口内容的内部 HTML，内容尽可能丰富。不要生成任何登录、注册或加载中的界面，假设用户已经登录。首屏推荐且优先使用如下应用结构：<tool-bar id="...">...</tool-bar><app-layout id="...">...</app-layout><status-bar id="...">...</status-bar>。tool-bar 和 status-bar 是应用外壳，必须位于 app-layout 外；app-layout 是主内容区，系统已预置 flex:1、纵向布局和 overflow hidden，不要用普通 div 代替 app-layout。\n' +
+        '3. 实体控件（按钮、输入框、下拉框、文本框、图片、进度条、菜单行、状态字段等）不负责外边距；间距、分栏、滚动、对齐交给外层容器处理。\n' +
+        '4. 允许使用内联 style 处理局部布局、空间和滚动。允许属性：display、flex、flex-direction、gap、grid-template-*、grid-column/row、align-*、justify-*、padding、margin、width、height、min/max-width/height、overflow、box-sizing、order。禁止内联修改视觉主题或层级：color、background、border-color、box-shadow、font-family、border-radius、z-index、position:absolute/fixed、动画、滤镜。\n' +
+        "5. 可交互元素、会变化元素、图片、以及未来可能作为 Diff 替换目标的容器必须具备唯一 'id' 属性。纯展示叶子节点可以没有 id。\n" +
+        '6. tool-bar 中的下拉菜单标题直接写在 tool-item 文本里，不要再包 button；左右工具区分隔使用 <tool-spacer>。\n' +
+        '7. tree-view 必须使用 ul/li 树结构；有子级的节点由系统展开/折叠，叶子节点可作为导航命令触发更新。\n' +
+        '8. 滚动区域可使用 .scroll-area；该类不自带高度限制，空间由外层布局或必要的布局 style 控制。顶部区域使用 tool-bar，底部信息使用 status-bar。\n' +
+        '9. tab-view 中每个 tab 都必须有对应的 role="tabpanel" 内容；推荐写 aria-controls，也可用 tab-xxx / panel-xxx 的 ID 对应。切换标签页由系统本地处理，不触发更新。\n' +
+        '10. 表单控件（checkbox、radio、select、switch-control、segment-control 等）变更只记录状态，不会立即更新 UI；涉及筛选、提交、应用设置时，必须同时提供明确的按钮触发更新。\n' +
+        '11. 如果需要弹窗，输出普通 <dialog id="...">，内部使用 .dialog-header、.dialog-body、.dialog-footer 组织结构。打开弹窗时只返回新增 dialog 节点；弹窗确认/应用后再返回受影响的主内容节点。dialog-footer 中的确认/应用按钮会触发一次界面更新，取消/关闭按钮只关闭弹窗。\n' +
+        '12. 如果需要展示图像，格式必须为：<img id="unique-img-id" class="img" data-prompt="图片描述" src="">。将 src 留空，系统将拦截它并自动填充图像。图片描述为：详细特征标签，以英文逗号分隔。可指定尺寸，例如：832x1216|masterpiece, highly detailed, cyberpunk city'
+    },
+    {
+      role: 'user',
+      content: '[当前 UI 快照]\n' +
+        '<tool-bar id="chrome-toolbar" style="padding: 4px 8px; gap: 4px; align-items: center;">\n' +
+        '    <button id="btn-nav-back" class="btn">←</button>\n' +
+        '    <button id="btn-nav-forward" class="btn">→</button>\n' +
+        '    <button id="btn-nav-refresh" class="btn">↻</button>\n' +
+        '    <button id="btn-nav-home" class="btn">🏠</button>\n' +
+        '    <div id="address-bar-container" style="display: flex; flex: 1; padding: 0 8px;">\n' +
+        '        <input id="input-address-bar" class="input" value="" placeholder="Search Google or type a URL" style="flex: 1; width: 100%;">\n' +
+        '    </div>\n' +
+        '    <button id="btn-ext" class="btn">🧩</button>\n' +
+        '    <button id="btn-user-profile" class="btn">👤</button>\n' +
+        '    <tool-item id="menu-browser" aria-expanded="false">\n' +
+        '        ⋮\n' +
+        '        <tool-popup id="popup-browser-menu">\n' +
+        '            <tool-row id="menu-item-new-tab">New tab</tool-row>\n' +
+        '            <tool-row id="menu-item-new-window">New window</tool-row>\n' +
+        '            <tool-divider></tool-divider>\n' +
+        '            <tool-row id="menu-item-history">History</tool-row>\n' +
+        '            <tool-row id="menu-item-downloads">Downloads</tool-row>\n' +
+        '            <tool-row id="menu-item-bookmarks">Bookmarks</tool-row>\n' +
+        '            <tool-divider></tool-divider>\n' +
+        '            <tool-row id="menu-item-settings">Settings</tool-row>\n' +
+        '            <tool-row id="menu-item-help">Help</tool-row>\n' +
+        '        </tool-popup>\n' +
+        '    </tool-item>\n' +
+        '</tool-bar><app-layout id="chrome-content-area">\n' +
+        '    <div id="new-tab-page" class="scroll-area" style="display: flex; flex-direction: column; align-items: center; height: 100%; padding: 24px; box-sizing: border-box;">\n' +
+        '        <div id="ntp-top-spacer" style="height: 10vh; min-height: 40px;"></div>\n' +
+        '        <div id="ntp-logo-wrap" style="margin-bottom: 32px; display: flex; justify-content: center;">\n' +
+        '            <img id="img-main-logo" class="img" data-prompt="Google logo typography, classic colors, clean white background" style="width: 272px; height: 92px;" src="" alt="[已生成的图像: Google logo typography, classic colors, clean white background]">\n' +
+        '        </div>\n' +
+        '        <div id="ntp-search-wrap" style="display: flex; width: 100%; max-width: 584px; margin-bottom: 32px;">\n' +
+        '            <input id="input-ntp-search" class="input" placeholder="Search Google or type a URL" style="flex: 1; padding: 12px 16px;" value="wikipedia">\n' +
+        '        </div>\n' +
+        '        <div id="ntp-shortcuts-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 500px; width: 100%;">\n' +
+        '            <div id="shortcut-item-1" style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px;">\n' +
+        '                <div id="sc-icon-wrap-1" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">\n' +
+        '                     <img id="img-shortcut-yt" class="img img-round" data-prompt="YouTube icon logo, flat design" style="width: 24px; height: 24px;" src="">\n' +
+        '                </div>\n' +
+        '                <span id="sc-text-1" class="text-muted">YouTube</span>\n' +
+        '            </div>\n' +
+        '            <div id="shortcut-item-2" style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px;">\n' +
+        '                <div id="sc-icon-wrap-2" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">\n' +
+        '                     <img id="img-shortcut-gm" class="img img-round" data-prompt="Gmail icon logo, flat design" style="width: 24px; height: 24px;" src="">\n' +
+        '                </div>\n' +
+        '                <span id="sc-text-2" class="text-muted">Gmail</span>\n' +
+        '            </div>\n' +
+        '            <div id="shortcut-item-3" style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px;">\n' +
+        '                <div id="sc-icon-wrap-3" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">\n' +
+        '                     <img id="img-shortcut-gh" class="img img-round" data-prompt="GitHub icon logo, flat design" style="width: 24px; height: 24px;" src="">\n' +
+        '                </div>\n' +
+        '                <span id="sc-text-3" class="text-muted">GitHub</span>\n' +
+        '            </div>\n' +
+        '            <div id="shortcut-item-add" style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 8px;">\n' +
+        '                <div id="sc-icon-wrap-add" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;">\n' +
+        '                     <button id="btn-add-sc" class="btn" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;">+</button>\n' +
+        '                </div>\n' +
+        '                <span id="sc-text-add" class="text-muted">Add shortcut</span>\n' +
+        '            </div>\n' +
+        '        </div>\n' +
+        '        <div id="ntp-bottom-spacer" style="flex: 1; min-height: 40px;"></div>\n' +
+        '        <div id="ntp-footer" style="display: flex; justify-content: flex-end; width: 100%; padding-top: 16px;">\n' +
+        '            <button id="btn-customize-page" class="btn" style="display: flex; align-items: center; gap: 8px;">\n' +
+        '                <span>✏️</span> Customize Chrome\n' +
+        '            </button>\n' +
+        '        </div>\n' +
+        '    </div>\n' +
+        '</app-layout><status-bar id="chrome-status-bar">\n' +
+        '    <status-field id="sf-hover-url"></status-field>\n' +
+        '</status-bar>\n' +
+        '\n' +
+        '[用户动作]\n' +
+        '[\n' +
+        '  {\n' +
+        '    "type": "focus",\n' +
+        '    "targetId": "input-ntp-search"\n' +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "input",\n' +
+        '    "targetId": "input-ntp-search",\n' +
+        '    "value": "w"\n' +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "input",\n' +
+        '    "targetId": "input-ntp-search",\n' +
+        `    "value": "w'i"\n` +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "input",\n' +
+        '    "targetId": "input-ntp-search",\n' +
+        `    "value": "w'i'l"\n` +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "input",\n' +
+        '    "targetId": "input-ntp-search",\n' +
+        '    "value": "wili"\n' +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "input",\n' +
+        '    "targetId": "input-ntp-search",\n' +
+        `    "value": "w'i'l"\n` +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "input",\n' +
+        '    "targetId": "input-ntp-search",\n' +
+        `    "value": "w'i"\n` +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "input",\n' +
+        '    "targetId": "input-ntp-search",\n' +
+        `    "value": "w'i'k"\n` +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "input",\n' +
+        '    "targetId": "input-ntp-search",\n' +
+        '    "value": "wiki"\n' +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "input",\n' +
+        '    "targetId": "input-ntp-search",\n' +
+        '    "value": "wikip"\n' +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "input",\n' +
+        '    "targetId": "input-ntp-search",\n' +
+        '    "value": "wikipe"\n' +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "input",\n' +
+        '    "targetId": "input-ntp-search",\n' +
+        '    "value": "wikiped"\n' +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "input",\n' +
+        '    "targetId": "input-ntp-search",\n' +
+        '    "value": "wikipedi"\n' +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "input",\n' +
+        '    "targetId": "input-ntp-search",\n' +
+        '    "value": "wikipedia"\n' +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "input",\n' +
+        '    "targetId": "input-ntp-search",\n' +
+        '    "value": "wikipedia"\n' +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "submit_enter",\n' +
+        '    "targetId": "input-ntp-search"\n' +
+        '  }\n' +
+        ']\n' +
+        '\n' +
+        '分析这组动作的逻辑后果。输出代表更新后 UI 状态的精确 HTML 节点（必须保留其原始 ID）。'
+    }
+  ],
+  prompt: undefined,
+  model: 'gemini-3.1-pro-preview',
+  temperature: 0.8,
+  max_tokens: 32000,
+  max_completion_tokens: undefined,
+  stream: false,
+  presence_penalty: 0,
+  frequency_penalty: 0,
+  top_p: 0.6,
+  top_k: undefined,
+  stop: undefined,
+  logit_bias: undefined,
+  seed: undefined,
+  n: undefined,
+  logprobs: undefined,
+  top_logprobs: undefined
+}
+Chat Completion response: {
+  id: 'aa7426f6-5e43-4ac8-b777-ab162c08a14c',
+  object: 'chat.completion',
+  created: 1781533409,
+  model: 'gemini-3.1-pro-preview',
+  choices: [
+    {
+      index: 0,
+      message: {
+        role: 'assistant',
+        content: '<tool-bar id="chrome-toolbar" style="padding: 4px 8px; gap: 4px; align-items: center;">\n' +
+          '    <button id="btn-nav-back" class="btn">←</button>\n' +
+          '    <button id="btn-nav-forward" class="btn">→</button>\n' +
+          '    <button id="btn-nav-refresh" class="btn">↻</button>\n' +
+          '    <button id="btn-nav-home" class="btn">🏠</button>\n' +
+          '    <div id="address-bar-container" style="display: flex; flex: 1; padding: 0 8px;">\n' +
+          '        <input id="input-address-bar" class="input" value="https://www.google.com/search?q=wikipedia" placeholder="Search Google or type a URL" style="flex: 1; width: 100%;">\n' +
+          '    </div>\n' +
+          '    <button id="btn-ext" class="btn">🧩</button>\n' +
+          '    <button id="btn-user-profile" class="btn">👤</button>\n' +
+          '    <tool-item id="menu-browser" aria-expanded="false">\n' +
+          '        ⋮\n' +
+          '        <tool-popup id="popup-browser-menu">\n' +
+          '            <tool-row id="menu-item-new-tab">New tab</tool-row>\n' +
+          '            <tool-row id="menu-item-new-window">New window</tool-row>\n' +
+          '            <tool-divider></tool-divider>\n' +
+          '            <tool-row id="menu-item-history">History</tool-row>\n' +
+          '            <tool-row id="menu-item-downloads">Downloads</tool-row>\n' +
+          '            <tool-row id="menu-item-bookmarks">Bookmarks</tool-row>\n' +
+          '            <tool-divider></tool-divider>\n' +
+          '            <tool-row id="menu-item-settings">Settings</tool-row>\n' +
+          '            <tool-row id="menu-item-help">Help</tool-row>\n' +
+          '        </tool-popup>\n' +
+          '    </tool-item>\n' +
+          '</tool-bar>\n' +
+          '<app-layout id="chrome-content-area">\n' +
+          '    <div id="webpage-google-search" class="scroll-area" style="display: flex; flex-direction: column; height: 100%; background-color: #ffffff;">\n' +
+          '        <div id="google-header" style="display: flex; align-items: center; padding: 20px 24px 0 24px; gap: 24px;">\n' +
+          '            <img id="img-google-logo-small" class="img" data-prompt="Google logo typography, classic colors, clean white background" style="width: 92px; height: 30px;" src="">\n' +
+          '            <div id="google-search-box-wrap" style="display: flex; flex: 1; max-width: 690px;">\n' +
+          '                <input id="input-google-search" class="input" value="wikipedia" style="flex: 1; padding: 12px 24px; border-radius: 24px; border: 1px solid #dfe1e5;">\n' +
+          '            </div>\n' +
+          '            <div style="flex: 1;"></div>\n' +
+          '            <button id="btn-google-apps" class="btn">⋮⋮⋮</button>\n' +
+          '            <button id="btn-google-profile" class="btn">👤</button>\n' +
+          '        </div>\n' +
+          '        \n' +
+          '        <div id="google-nav" style="display: flex; padding: 16px 24px 0 140px; gap: 24px; border-bottom: 1px solid #ebebeb;">\n' +
+          '            <div id="nav-all" style="padding-bottom: 12px; border-bottom: 3px solid #1a73e8; color: #1a73e8; font-weight: bold;">All</div>\n' +
+          '            <div id="nav-images" class="text-muted" style="padding-bottom: 12px;">Images</div>\n' +
+          '            <div id="nav-news" class="text-muted" style="padding-bottom: 12px;">News</div>\n' +
+          '            <div id="nav-videos" class="text-muted" style="padding-bottom: 12px;">Videos</div>\n' +
+          '            <div id="nav-maps" class="text-muted" style="padding-bottom: 12px;">Maps</div>\n' +
+          '        </div>\n' +
+          '\n' +
+          '        <div id="google-content" style="display: flex; padding: 24px 24px 24px 140px; gap: 64px;">\n' +
+          '            <div id="google-main-results" style="display: flex; flex-direction: column; gap: 28px; max-width: 600px; flex: 1;">\n' +
+          '                <div id="result-1" style="display: flex; flex-direction: column; gap: 4px;">\n' +
+          '                    <div id="res-url-1" style="display: flex; align-items: center; gap: 8px;">\n' +
+          '                        <img id="img-favicon-wiki-1" class="img img-round" data-prompt="Wikipedia W logo icon" style="width: 16px; height: 16px;" src="">\n' +
+          '                        <span class="text-muted" style="font-size: 14px;">https://en.wikipedia.org</span>\n' +
+          '                    </div>\n' +
+          '                    <div id="res-title-1" class="h2" style="color: #1a0dab; cursor: pointer; margin: 0;">Wikipedia, the free encyclopedia</div>\n' +
+          '                    <div id="res-desc-1" style="color: #4d5156; font-size: 14px; line-height: 1.58;">\n' +
+          '                        Wikipedia is a free online encyclopedia, created and edited by volunteers around the world and hosted by the Wikimedia Foundation.\n' +
+          '                    </div>\n' +
+          '                </div>\n' +
+          '\n' +
+          '                <div id="result-2" style="display: flex; flex-direction: column; gap: 4px;">\n' +
+          '                    <div id="res-url-2" style="display: flex; align-items: center; gap: 8px;">\n' +
+          '                        <img id="img-favicon-wiki-2" class="img img-round" data-prompt="Wikipedia W logo icon" style="width: 16px; height: 16px;" src="">\n' +
+          '                        <span class="text-muted" style="font-size: 14px;">https://en.wikipedia.org › wiki › Wikipedia</span>\n' +
+          '                    </div>\n' +
+          '                    <div id="res-title-2" class="h2" style="color: #1a0dab; cursor: pointer; margin: 0;">Wikipedia - Wikipedia</div>\n' +
+          '                    <div id="res-desc-2" style="color: #4d5156; font-size: 14px; line-height: 1.58;">\n' +
+          '                        Wikipedia is a multilingual free online encyclopedia written and maintained by a community of volunteers, known as Wikipedians, through open collaboration...\n' +
+          '                    </div>\n' +
+          '                </div>\n' +
+          '\n' +
+          '                <div id="result-3" style="display: flex; flex-direction: column; gap: 4px;">\n' +
+          '                    <div id="res-url-3" style="display: flex; align-items: center; gap: 8px;">\n' +
+          '                        <img id="img-favicon-wiki-3" class="img img-round" data-prompt="Wikipedia W logo icon" style="width: 16px; height: 16px;" src="">\n' +
+          '                        <span class="text-muted" style="font-size: 14px;">https://zh.wikipedia.org</span>\n' +
+          '                    </div>\n' +
+          '                    <div id="res-title-3" class="h2" style="color: #1a0dab; cursor: pointer; margin: 0;">维基百科，自由的百科全书</div>\n' +
+          '                    <div id="res-desc-3" style="color: #4d5156; font-size: 14px; line-height: 1.58;">\n' +
+          '                        维基百科是一个自由、免费、内容开放的百科全书协作计划，参与者来自世界各地。\n' +
+          '                    </div>\n' +
+          '                </div>\n' +
+          '            </div>\n' +
+          '\n' +
+          '            <div id="google-knowledge-panel" class="card" style="width: 360px; padding: 0; border: 1px solid #ebebeb; border-radius: 8px; overflow: hidden; height: fit-content;">\n' +
+          '                <div id="kp-images" style="display: flex; height: 120px; gap: 2px; background: #ffffff;">\n' +
+          '                    <img id="img-kp-1" class="img" data-prompt="Wikipedia homepage screenshot" style="flex: 1; object-fit: cover;" src="">\n' +
+          '                    <img id="img-kp-2" class="img" data-prompt="Wikipedia puzzle globe logo" style="flex: 1; object-fit: cover;" src="">\n' +
+          '                </div>\n' +
+          '                <div id="kp-content" style="padding: 16px;">\n' +
+          '                    <div id="kp-title" class="h1" style="margin: 0 0 4px 0;">Wikipedia</div>\n' +
+          '                    <div id="kp-subtitle" class="text-muted" style="margin-bottom: 16px;">Online encyclopedia</div>\n' +
+          '                    <div id="kp-desc" style="font-size: 14px; line-height: 1.58; color: #4d5156; margin-bottom: 16px;">\n' +
+          '                        Wikipedia is a multilingual free online encyclopedia written and maintained by a community of volunteers, known as Wikipedians, through open collaboration and using a wiki-based editing system.\n' +
+          '                    </div>\n' +
+          '                    <div id="kp-details" style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">\n' +
+          '                        <div id="kp-detail-1"><span style="font-weight: bold; color: #3c4043;">Date launched:</span> <span style="color: #4d5156;">January 15, 2001</span></div>\n' +
+          '                        <div id="kp-detail-2"><span style="font-weight: bold; color: #3c4043;">Founders:</span> <span style="color: #1a0dab; cursor: pointer;">Jimmy Wales</span>, <span style="color: #1a0dab; cursor: pointer;">Larry Sanger</span></div>\n' +
+          '                        <div id="kp-detail-3"><span style="font-weight: bold; color: #3c4043;">Owner:</span> <span style="color: #1a0dab; cursor: pointer;">Wikimedia Foundation</span></div>\n' +
+          '                    </div>\n' +
+          '                </div>\n' +
+          '            </div>\n' +
+          '        </div>\n' +
+          '    </div>\n' +
+          '</app-layout>\n' +
+          '<status-bar id="chrome-status-bar">\n' +
+          '    <status-field id="sf-hover-url"></status-field>\n' +
+          '</status-bar>',
+
+
+      role: 'user',
+      content: '[当前 UI 快照]\n' +
+        '<tool-bar id="chrome-toolbar" style="padding: 4px 8px; gap: 4px; align-items: center;">\n' +
+        '    <button id="btn-nav-back" class="btn">←</button>\n' +
+        '    <button id="btn-nav-forward" class="btn">→</button>\n' +
+        '    <button id="btn-nav-refresh" class="btn">↻</button>\n' +
+        '    <button id="btn-nav-home" class="btn">🏠</button>\n' +
+        '    <div id="address-bar-container" style="display: flex; flex: 1; padding: 0 8px;">\n' +
+        '        <input id="input-address-bar" class="input" value="https://www.google.com/search?q=wikipedia" placeholder="Search Google or type a URL" style="flex: 1; width: 100%;">\n' +
+        '    </div>\n' +
+        '    <button id="btn-ext" class="btn">🧩</button>\n' +
+        '    <button id="btn-user-profile" class="btn">👤</button>\n' +
+        '    <tool-item id="menu-browser" aria-expanded="false">\n' +
+        '        ⋮\n' +
+        '        <tool-popup id="popup-browser-menu">\n' +
+        '            <tool-row id="menu-item-new-tab">New tab</tool-row>\n' +
+        '            <tool-row id="menu-item-new-window">New window</tool-row>\n' +
+        '            <tool-divider></tool-divider>\n' +
+        '            <tool-row id="menu-item-history">History</tool-row>\n' +
+        '            <tool-row id="menu-item-downloads">Downloads</tool-row>\n' +
+        '            <tool-row id="menu-item-bookmarks">Bookmarks</tool-row>\n' +
+        '            <tool-divider></tool-divider>\n' +
+        '            <tool-row id="menu-item-settings">Settings</tool-row>\n' +
+        '            <tool-row id="menu-item-help">Help</tool-row>\n' +
+        '        </tool-popup>\n' +
+        '    </tool-item>\n' +
+        '</tool-bar><app-layout id="chrome-content-area">\n' +
+        '    <div id="webpage-google-search" class="scroll-area" style="display: flex; flex-direction: column; height: 100%; background-color: #ffffff;">\n' +
+        '        <div id="google-header" style="display: flex; align-items: center; padding: 20px 24px 0 24px; gap: 24px;">\n' +
+        '            <img id="img-google-logo-small" class="img" data-prompt="Google logo typography, classic colors, clean white background" style="width: 92px; height: 30px;" src="" alt="[已生成的图像: Google logo typography, classic colors, clean white background]">\n' +
+        '            <div id="google-search-box-wrap" style="display: flex; flex: 1; max-width: 690px;">\n' +
+        '                <input id="input-google-search" class="input" value="wikipedia" style="flex: 1; padding: 12px 24px; border-radius: 24px; border: 1px solid #dfe1e5;">\n' +
+        '            </div>\n' +
+        '            <div style="flex: 1;"></div>\n' +
+        '            <button id="btn-google-apps" class="btn">⋮⋮⋮</button>\n' +
+        '            <button id="btn-google-profile" class="btn">👤</button>\n' +
+        '        </div>\n' +
+        '        \n' +
+        '        <div id="google-nav" style="display: flex; padding: 16px 24px 0 140px; gap: 24px; border-bottom: 1px solid #ebebeb;">\n' +
+        '            <div id="nav-all" style="padding-bottom: 12px; border-bottom: 3px solid #1a73e8; color: #1a73e8; font-weight: bold;">All</div>\n' +
+        '            <div id="nav-images" class="text-muted" style="padding-bottom: 12px;">Images</div>\n' +
+        '            <div id="nav-news" class="text-muted" style="padding-bottom: 12px;">News</div>\n' +
+        '            <div id="nav-videos" class="text-muted" style="padding-bottom: 12px;">Videos</div>\n' +
+        '            <div id="nav-maps" class="text-muted" style="padding-bottom: 12px;">Maps</div>\n' +
+        '        </div>\n' +
+        '\n' +
+        '        <div id="google-content" style="display: flex; padding: 24px 24px 24px 140px; gap: 64px;">\n' +
+        '            <div id="google-main-results" style="display: flex; flex-direction: column; gap: 28px; max-width: 600px; flex: 1;">\n' +
+        '                <div id="result-1" style="display: flex; flex-direction: column; gap: 4px;">\n' +
+        '                    <div id="res-url-1" style="display: flex; align-items: center; gap: 8px;">\n' +
+        '                        <img id="img-favicon-wiki-1" class="img img-round" data-prompt="Wikipedia W logo icon" style="width: 16px; height: 16px;" src="" alt="[已生成的图像: Wikipedia W logo icon]">\n' +
+        '                        <span class="text-muted" style="font-size: 14px;">https://en.wikipedia.org</span>\n' +
+        '                    </div>\n' +
+        '                    <div id="res-title-1" class="h2" style="color: #1a0dab; cursor: pointer; margin: 0;">Wikipedia, the free encyclopedia</div>\n' +
+        '                    <div id="res-desc-1" style="color: #4d5156; font-size: 14px; line-height: 1.58;">\n' +
+        '                        Wikipedia is a free online encyclopedia, created and edited by volunteers around the world and hosted by the Wikimedia Foundation.\n' +
+        '                    </div>\n' +
+        '                </div>\n' +
+        '\n' +
+        '                <div id="result-2" style="display: flex; flex-direction: column; gap: 4px;">\n' +
+        '                    <div id="res-url-2" style="display: flex; align-items: center; gap: 8px;">\n' +
+        '                        <img id="img-favicon-wiki-2" class="img img-round" data-prompt="Wikipedia W logo icon" style="width: 16px; height: 16px;" src="" alt="[已生成的图像: Wikipedia W logo icon]">\n' +
+        '                        <span class="text-muted" style="font-size: 14px;">https://en.wikipedia.org › wiki › Wikipedia</span>\n' +
+        '                    </div>\n' +
+        '                    <div id="res-title-2" class="h2" style="color: #1a0dab; cursor: pointer; margin: 0;">Wikipedia - Wikipedia</div>\n' +
+        '                    <div id="res-desc-2" style="color: #4d5156; font-size: 14px; line-height: 1.58;">\n' +
+        '                        Wikipedia is a multilingual free online encyclopedia written and maintained by a community of volunteers, known as Wikipedians, through open collaboration...\n' +
+        '                    </div>\n' +
+        '                </div>\n' +
+        '\n' +
+        '                <div id="result-3" style="display: flex; flex-direction: column; gap: 4px;">\n' +
+        '                    <div id="res-url-3" style="display: flex; align-items: center; gap: 8px;">\n' +
+        '                        <img id="img-favicon-wiki-3" class="img img-round" data-prompt="Wikipedia W logo icon" style="width: 16px; height: 16px;" src="" alt="[已生成的图像: Wikipedia W logo icon]">\n' +
+        '                        <span class="text-muted" style="font-size: 14px;">https://zh.wikipedia.org</span>\n' +
+        '                    </div>\n' +
+        '                    <div id="res-title-3" class="h2" style="color: #1a0dab; cursor: pointer; margin: 0;">维基百科，自由的百科全书</div>\n' +
+        '                    <div id="res-desc-3" style="color: #4d5156; font-size: 14px; line-height: 1.58;">\n' +
+        '                        维基百科是一个自由、免费、内容开放的百科全书协作计划，参与者来自世界各地。\n' +
+        '                    </div>\n' +
+        '                </div>\n' +
+        '            </div>\n' +
+        '\n' +
+        '            <div id="google-knowledge-panel" class="card" style="width: 360px; padding: 0; border: 1px solid #ebebeb; border-radius: 8px; overflow: hidden; height: fit-content;">\n' +
+        '                <div id="kp-images" style="display: flex; height: 120px; gap: 2px; background: #ffffff;">\n' +
+        '                    <img id="img-kp-1" class="img" data-prompt="Wikipedia homepage screenshot" style="flex: 1; object-fit: cover;" src="" alt="[已生成的图像: Wikipedia homepage screenshot]">\n' +
+        '                    <img id="img-kp-2" class="img" data-prompt="Wikipedia puzzle globe logo" style="flex: 1; object-fit: cover;" src="" alt="[已生成的图像: Wikipedia puzzle globe logo]">\n' +
+        '                </div>\n' +
+        '                <div id="kp-content" style="padding: 16px;">\n' +
+        '                    <div id="kp-title" class="h1" style="margin: 0 0 4px 0;">Wikipedia</div>\n' +
+        '                    <div id="kp-subtitle" class="text-muted" style="margin-bottom: 16px;">Online encyclopedia</div>\n' +
+        '                    <div id="kp-desc" style="font-size: 14px; line-height: 1.58; color: #4d5156; margin-bottom: 16px;">\n' +
+        '                        Wikipedia is a multilingual free online encyclopedia written and maintained by a community of volunteers, known as Wikipedians, through open collaboration and using a wiki-based editing system.\n' +
+        '                    </div>\n' +
+        '                    <div id="kp-details" style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">\n' +
+        '                        <div id="kp-detail-1"><span style="font-weight: bold; color: #3c4043;">Date launched:</span> <span style="color: #4d5156;">January 15, 2001</span></div>\n' +
+        '                        <div id="kp-detail-2"><span style="font-weight: bold; color: #3c4043;">Founders:</span> <span style="color: #1a0dab; cursor: pointer;">Jimmy Wales</span>, <span style="color: #1a0dab; cursor: pointer;">Larry Sanger</span></div>\n' +
+        '                        <div id="kp-detail-3"><span style="font-weight: bold; color: #3c4043;">Owner:</span> <span style="color: #1a0dab; cursor: pointer;">Wikimedia Foundation</span></div>\n' +
+        '                    </div>\n' +
+        '                </div>\n' +
+        '            </div>\n' +
+        '        </div>\n' +
+        '    </div>\n' +
+        '</app-layout><status-bar id="chrome-status-bar">\n' +
+        '    <status-field id="sf-hover-url"></status-field>\n' +
+        '</status-bar>\n' +
+        '\n' +
+        '[用户动作]\n' +
+        '[\n' +
+        '  {\n' +
+        '    "type": "change",\n' +
+        '    "targetId": "input-ntp-search",\n' +
+        '    "value": "wikipedia"\n' +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "focus",\n' +
+        '    "targetId": "input-google-search"\n' +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "focus",\n' +
+        '    "targetId": "input-google-search"\n' +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "focus",\n' +
+        '    "targetId": "btn-google-apps"\n' +
+        '  },\n' +
+        '  {\n' +
+        '    "type": "click",\n' +
+        '    "targetId": "btn-google-apps"\n' +
+        '  }\n' +
+        ']\n' +
+        '\n' +
+        '分析这组动作的逻辑后果。输出代表更新后 UI 状态的精确 HTML 节点（必须保留其原始 ID）。'
+
+Chat Completion response: {
+  id: '27b4253a-c4af-43da-be17-b04608f1c2b1',
+  object: 'chat.completion',
+  created: 1781533668,
+  model: 'gemini-3.1-pro-preview',
+  choices: [
+    {
+      index: 0,
+      message: {
+        role: 'assistant',
+        content: '<dialog id="dialog-google-apps">\n' +
+          '    <div class="dialog-body" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px 16px; padding: 24px; width: 320px; max-height: 400px; overflow-y: auto; box-sizing: border-box;">\n' +
+          '        <div id="app-account" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;">\n' +
+          '            <img id="img-app-account" class="img img-round" data-prompt="Google Account icon" style="width: 40px; height: 40px;" src="">\n' +
+          '            <span style="font-size: 14px; color: #3c4043;">Account</span>\n' +
+          '        </div>\n' +
+          '        <div id="app-search" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;">\n' +
+          '            <img id="img-app-search" class="img img-round" data-prompt="Google Search icon" style="width: 40px; height: 40px;" src="">\n' +
+          '            <span style="font-size: 14px; color: #3c4043;">Search</span>\n' +
+          '        </div>\n' +
+          '        <div id="app-maps" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;">\n' +
+          '            <img id="img-app-maps" class="img img-round" data-prompt="Google Maps icon" style="width: 40px; height: 40px;" src="">\n' +
+          '            <span style="font-size: 14px; color: #3c4043;">Maps</span>\n' +
+          '        </div>\n' +
+          '        <div id="app-youtube" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;">\n' +
+          '            <img id="img-app-youtube" class="img img-round" data-prompt="YouTube icon" style="width: 40px; height: 40px;" src="">\n' +
+          '            <span style="font-size: 14px; color: #3c4043;">YouTube</span>\n' +
+          '        </div>\n' +
+          '        <div id="app-play" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;">\n' +
+          '            <img id="img-app-play" class="img img-round" data-prompt="Google Play icon" style="width: 40px; height: 40px;" src="">\n' +
+          '            <span style="font-size: 14px; color: #3c4043;">Play</span>\n' +
+          '        </div>\n' +
+          '        <div id="app-news" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;">\n' +
+          '            <img id="img-app-news" class="img img-round" data-prompt="Google News icon" style="width: 40px; height: 40px;" src="">\n' +
+          '            <span style="font-size: 14px; color: #3c4043;">News</span>\n' +
+          '        </div>\n' +
+          '        <div id="app-gmail" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;">\n' +
+          '            <img id="img-app-gmail" class="img img-round" data-prompt="Gmail icon" style="width: 40px; height: 40px;" src="">\n' +
+          '            <span style="font-size: 14px; color: #3c4043;">Gmail</span>\n' +
+          '        </div>\n' +
+          '        <div id="app-meet" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;">\n' +
+          '            <img id="img-app-meet" class="img img-round" data-prompt="Google Meet icon" style="width: 40px; height: 40px;" src="">\n' +
+          '            <span style="font-size: 14px; color: #3c4043;">Meet</span>\n' +
+          '        </div>\n' +
+          '        <div id="app-drive" style="display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;">\n' +
+          '            <img id="img-app-drive" class="img img-round" data-prompt="Google Drive icon" style="width: 40px; height: 40px;" src="">\n' +
+          '            <span style="font-size: 14px; color: #3c4043;">Drive</span>\n' +
+          '        </div>\n' +
+          '    </div>\n' +
+          '</dialog>',
+
+下面是另一个关于标签页的失败log:
+        content: '<tool-bar id="main-toolbar">\n' +
+          '    <button class="btn" id="btn-nav-back">Back</button>\n' +
+          '    <button class="btn" id="btn-nav-forward">Forward</button>\n' +
+          '    <button class="btn" id="btn-nav-up">Up</button>\n' +
+          '    <input class="input" id="input-path" value="This PC > Quick Access > Home" style="flex: 1; min-width: 200px; margin: 0 16px;">\n' +
+          '    <button class="btn btn-primary" id="btn-new-item">New</button>\n' +
+          '    <tool-item id="menu-sort">\n' +
+          '        Sort\n' +
+          '        <tool-popup id="popup-sort">\n' +
+          '            <tool-row id="sort-name">Name</tool-row>\n' +
+          '            <tool-row id="sort-date">Date modified</tool-row>\n' +
+          '            <tool-row id="sort-type">Type</tool-row>\n' +
+          '            <tool-row id="sort-size">Size</tool-row>\n' +
+          '            <tool-divider></tool-divider>\n' +
+          '            <tool-row id="sort-asc">Ascending</tool-row>\n' +
+          '            <tool-row id="sort-desc">Descending</tool-row>\n' +
+          '        </tool-popup>\n' +
+          '    </tool-item>\n' +
+          '    <segment-control id="seg-view-mode" style="margin: 0 16px;">\n' +
+          '        <segment-option value="grid" selected>Grid</segment-option>\n' +
+          '        <segment-option value="list">List</segment-option>\n' +
+          '    </segment-control>\n' +
+          '    <input class="input" id="input-search" placeholder="Search Home" style="width: 240px;">\n' +
+          '</tool-bar>\n' +
+          '\n' +
+          '<app-layout id="main-layout">\n' +
+          '    <tab-view id="app-tabs" style="display: flex; flex-direction: column; flex: 1; height: 100%;">\n' +
+          '        <div role="tablist" style="display: flex; gap: 4px; padding: 8px 8px 0 8px;">\n' +
+          '            <button role="tab" aria-selected="true" aria-controls="panel-home" id="tab-home" class="btn" style="padding: 8px 24px;">Home</button>\n' +
+          '            <button role="tab" aria-selected="false" aria-controls="panel-documents" id="tab-documents" class="btn" style="padding: 8px 24px;">Documents</button>\n' +
+          '            <button role="tab" aria-selected="false" aria-controls="panel-downloads" id="tab-downloads" class="btn" style="padding: 8px 24px;">Downloads</button>\n' +
+          '            <button class="btn" id="btn-add-tab" style="padding: 8px 12px;">+</button>\n' +
+          '        </div>\n' +
+          '        \n' +
+          '        <div role="tabpanel" id="panel-home" style="flex: 1; display: flex; overflow: hidden;">\n' +
+          '            <split-view id="split-main" direction="horizontal" style="flex: 1; display: flex; width: 100%;">\n' +
+          '                \n' +
+          '                <side-panel id="sidebar-nav" style="width: 260px; flex-shrink: 0; display: flex; flex-direction: column;">\n' +
+          '                    <div class="scroll-area" style="flex: 1; padding: 12px;">\n' +
+          '                        <tree-view id="tree-navigation">\n' +
+          '                            <ul class="list">\n' +
+          '                                <li class="list-item" id="node-quick-access">\n' +
+          '                                    <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0;">\n' +
+          '                                        <span style="font-weight: bold;">Quick Access</span>\n' +
+          '                                    </div>\n' +
+          '                                    <ul class="list" style="padding-left: 24px; display: flex; flex-direction: column; gap: 4px;">\n' +
+          '                                        <li class="list-item" id="nav-home" style="padding: 6px; cursor: pointer;">Home</li>\n' +
+          '                                        <li class="list-item" id="nav-desktop" style="padding: 6px; cursor: pointer;">Desktop</li>\n' +
+          '                                        <li class="list-item" id="nav-downloads" style="padding: 6px; cursor: pointer;">Downloads</li>\n' +
+          '                                        <li class="list-item" id="nav-documents" style="padding: 6px; cursor: pointer;">Documents</li>\n' +
+          '                                        <li class="list-item" id="nav-pictures" style="padding: 6px; cursor: pointer;">Pictures</li>\n' +
+          '                                    </ul>\n' +
+          '                                </li>\n' +
+          '                                <li class="list-item" id="node-this-pc" style="margin-top: 16px;">\n' +
+          '                                    <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0;">\n' +
+          '                                        <span style="font-weight: bold;">This PC</span>\n' +
+          '                                    </div>\n' +
+          '                                    <ul class="list" style="padding-left: 24px; display: flex; flex-direction: column; gap: 4px;">\n' +
+          '                                        <li class="list-item" id="nav-drive-c" style="padding: 6px; cursor: pointer;">OS (C:)</li>\n' +
+          '                                        <li class="list-item" id="nav-drive-d" style="padding: 6px; cursor: pointer;">Data (D:)</li>\n' +
+          '                                    </ul>\n' +
+          '                                </li>\n' +
+          '                                <li class="list-item" id="node-network" style="margin-top: 16px;">\n' +
+          '                                    <div style="display: flex; align-items: center; gap: 8px; padding: 4px 0;">\n' +
+          '                                        <span style="font-weight: bold;">Network</span>\n' +
+          '                                    </div>\n' +
+          '                                </li>\n' +
+          '                            </ul>\n' +
+          '                        </tree-view>\n' +
+          '                    </div>\n' +
+          '                </side-panel>\n' +
+          '                \n' +
+          '                <div id="content-grid-area" style="flex: 1; display: flex; flex-direction: column;">\n' +
+          '                    <div class="scroll-area" id="grid-container" style="flex: 1; padding: 24px; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 24px; align-content: start;">\n' +
+          '                        \n' +
+          '                        <div class="card" id="item-folder-docs" style="display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 12px; cursor: pointer;">\n' +
+          '                            <img id="icon-folder-docs" class="img" data-prompt="minimalist yellow folder icon, flat design, white background" style="width: 72px; height: 72px; object-fit: contain;">\n' +
+          '                            <span style="font-size: 14px; text-align: center; word-break: break-word;">Documents</span>\n' +
+          '                        </div>\n' +
+          '                        \n' +
+          '                        <div class="card" id="item-folder-pics" style="display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 12px; cursor: pointer;">\n' +
+          '                            <img id="icon-folder-pics" class="img" data-prompt="minimalist yellow folder icon with a picture symbol, flat design, white background" style="width: 72px; height: 72px; object-fit: contain;">\n' +
+          '                            <span style="font-size: 14px; text-align: center; word-break: break-word;">Pictures</span>\n' +
+          '                        </div>\n' +
+          '\n' +
+          '                        <div class="card" id="item-folder-work" style="display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 12px; cursor: pointer;">\n' +
+          '                            <img id="icon-folder-work" class="img" data-prompt="minimalist yellow folder icon with a briefcase symbol, flat design, white background" style="width: 72px; height: 72px; object-fit: contain;">\n' +
+          '                            <span style="font-size: 14px; text-align: center; word-break: break-word;">Work Projects</span>\n' +
+          '                        </div>\n' +
+          '\n' +
+          '                        <div class="card" id="item-file-img1" style="display: flex; flex-direction: column; align-items: center; padding: 12px; gap: 12px; cursor: pointer;">\n' +
+          '                            <img id="thumb-img1" class="img" data-prompt="beautiful sunset over a cyberpunk city, highly detailed, thumbnail" style="width: 80px; height: 80px; object-fit: cover;">\n' +
+          '                            <span style="font-size: 14px; text-align: center; word-break: break-word;">city_sunset.png</span>\n' +
+          '                        </div>\n' +
+          '\n' +
+          '                        <div class="card" id="item-file-doc1" style="display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 12px; cursor: pointer;">\n' +
+          '                            <img id="icon-doc1" class="img" data-prompt="minimalist blue word document icon, flat design, white background" style="width: 72px; height: 72px; object-fit: contain;">\n' +
+          '                            <span style="font-size: 14px; text-align: center; word-break: break-word;">Q3_Financial_Report.docx</span>\n' +
+          '                        </div>\n' +
+          '                        \n' +
+          '                        <div class="card" id="item-file-pdf1" style="display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 12px; cursor: pointer;">\n' +
+          '                            <img id="icon-pdf1" class="img" data-prompt="minimalist red PDF document icon, flat design, white background" style="width: 72px; height: 72px; object-fit: contain;">\n' +
+          '                            <span style="font-size: 14px; text-align: center; word-break: break-word;">User_Manual.pdf</span>\n' +
+          '                        </div>\n' +
+          '\n' +
+          '                        <div class="card" id="item-file-zip1" style="display: flex; flex-direction: column; align-items: center; padding: 16px; gap: 12px; cursor: pointer;">\n' +
+          '                            <img id="icon-zip1" class="img" data-prompt="minimalist zip archive box icon, flat design, white background" style="width: 72px; height: 72px; object-fit: contain;">\n' +
+          '                            <span style="font-size: 14px; text-align: center; word-break: break-word;">assets_backup.zip</span>\n' +
+          '                        </div>\n' +
+          '\n' +
+          '                    </div>\n' +
+          '                </div>\n' +
+          '            </split-view>\n' +
+          '        </div>\n' +
+          '        \n' +
+          '        <div role="tabpanel" id="panel-documents" style="display: none; flex: 1;">\n' +
+          '            <div class="status-panel" id="docs-loading" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">\n' +
+          '                <div class="h2 text-muted">Loading Documents...</div>\n' +
+          '            </div>\n' +
+          '        </div>\n' +
+          '\n' +
+          '        <div role="tabpanel" id="panel-downloads" style="display: none; flex: 1;">\n' +
+          '            <div class="status-panel" id="downloads-empty" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">\n' +
+          '                <div class="h2 text-muted">Downloads folder is empty</div>\n' +
+          '            </div>\n' +
+          '        </div>\n' +
+          '    </tab-view>\n' +
+          '</app-layout>\n' +
+          '\n' +
+          '<status-bar id="main-statusbar">\n' +
+          '    <status-field id="status-item-count">7 items</status-field>\n' +
+          '    <status-field id="status-selection-count">1 item selected</status-field>\n' +
+          '    <status-field id="status-selection-size">4.2 MB</status-field>\n' +
+          '</status-bar>',

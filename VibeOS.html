@@ -296,13 +296,14 @@
 
         .checkbox,
         .radio {
-            margin: 0 var(--space-xs) 0 0;
+            margin: 0;
             cursor: pointer;
         }
 
         .label {
             display: flex;
             align-items: center;
+            gap: var(--space-xs);
             font-size: var(--text-base);
             cursor: pointer;
             user-select: none;
@@ -412,7 +413,10 @@
         side-panel,
         tab-view,
         tree-view,
-        tool-popup {
+        tool-popup,
+        switch-control,
+        segment-control,
+        segment-option {
             box-sizing: border-box;
         }
 
@@ -424,6 +428,15 @@
             border-bottom: 1px solid transparent;
             flex-shrink: 0;
             position: relative;
+        }
+
+        tool-bar button,
+        tool-bar .btn {
+            min-height: 22px;
+            height: 22px;
+            padding: 1px 6px;
+            box-shadow: none;
+            text-shadow: none;
         }
 
         tool-item {
@@ -476,6 +489,12 @@
             border: none;
         }
 
+        tool-spacer {
+            display: block;
+            flex: 1;
+            min-width: var(--space-sm);
+        }
+
         app-layout {
             flex: 1;
             min-height: 0;
@@ -524,21 +543,70 @@
             margin: 0;
         }
 
+        status-bar button,
+        status-bar .btn {
+            min-height: 18px;
+            height: 18px;
+            padding: 0 6px;
+            font-size: var(--text-xs);
+            line-height: 16px;
+            border-radius: var(--radius-sm);
+            box-shadow: none;
+        }
+
         tree-view {
             display: block;
             overflow: auto;
             padding: var(--space-xs);
+            font-size: var(--text-base);
         }
 
         tree-view ul {
             list-style: none;
-            padding-left: var(--space-md);
             margin: 0;
+            padding-left: 18px;
+            position: relative;
         }
 
         tree-view li {
             cursor: default;
-            padding: 2px 4px;
+            line-height: 18px;
+            min-height: 18px;
+            padding: 1px 4px 1px 18px;
+            position: relative;
+            user-select: none;
+        }
+
+        tree-view ul ul {
+            margin-left: 4px;
+        }
+
+        tree-view li::before {
+            content: "";
+            position: absolute;
+            left: 4px;
+            top: 9px;
+            width: 10px;
+            border-top: 1px dotted transparent;
+        }
+
+        tree-view li.tree-branch::after {
+            content: "-";
+            position: absolute;
+            left: 0;
+            top: 3px;
+            width: 10px;
+            height: 10px;
+            line-height: 9px;
+            text-align: center;
+            font-size: 10px;
+            border: 1px solid transparent;
+            background: #ffffff;
+            box-sizing: border-box;
+        }
+
+        tree-view li.tree-branch.collapsed::after {
+            content: "+";
         }
 
         tree-view li.collapsed > ul {
@@ -577,6 +645,63 @@
 
         tab-view [role="tabpanel"][hidden] {
             display: none;
+        }
+
+        switch-control {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            cursor: pointer;
+            user-select: none;
+            margin: 0;
+            position: relative;
+        }
+
+        switch-control::before {
+            content: "";
+            width: 28px;
+            height: 14px;
+            border: 1px solid transparent;
+            box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.18);
+        }
+
+        switch-control::after {
+            content: "";
+            position: absolute;
+            left: 3px;
+            top: 50%;
+            width: 10px;
+            height: 10px;
+            transform: translateY(-50%);
+            background: #ffffff;
+            border: 1px solid transparent;
+            box-sizing: border-box;
+        }
+
+        switch-control[aria-checked="true"]::after {
+            left: 17px;
+        }
+
+        segment-control {
+            display: inline-flex;
+            align-items: stretch;
+            margin: 0;
+            border: 1px solid transparent;
+        }
+
+        segment-option {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: var(--size-md);
+            padding: 4px 10px;
+            cursor: pointer;
+            border-right: 1px solid transparent;
+            user-select: none;
+        }
+
+        segment-option:last-child {
+            border-right: none;
         }
 
         .tabs button.active {
@@ -637,6 +762,7 @@
             width: 360px;
             max-width: min(90vw, 520px);
             max-height: 80vh;
+            margin: auto;
             padding: 0;
             border: 1px solid transparent;
             border-radius: var(--radius-window);
@@ -662,6 +788,22 @@
         .dialog-close {
             cursor: pointer;
             font-weight: bold;
+        }
+
+        .dialog-header .dialog-close {
+            width: var(--size-xs);
+            height: var(--size-xs);
+            min-width: var(--size-xs);
+            padding: 0;
+            margin-left: var(--space-sm);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            line-height: 1;
+            appearance: none;
         }
 
         .dialog-body {
@@ -820,14 +962,19 @@
         }
 
         .scroll-area {
-            max-height: var(--size-2xl);
             overflow-y: auto;
             border: 1px solid var(--color-border);
             padding: var(--space-sm);
             background: var(--color-bg-elevated);
+            min-height: 0;
         }
 
         .scroll-area-lg {
+            min-height: 0;
+        }
+
+        #settings-container #memory-list-container.scroll-area,
+        #settings-container #app-management-list.scroll-area {
             max-height: var(--size-3xl);
         }
 
@@ -852,12 +999,34 @@
             top: 30px;
             left: 0;
             right: 0;
+            bottom: 0;
             padding: 6px;
             text-align: center;
             font-weight: bold;
             font-size: var(--text-sm);
             z-index: 1000;
             border-bottom: 1px solid transparent;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            pointer-events: auto;
+        }
+
+        .global-loading-overlay::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(128, 128, 128, 0.18);
+            pointer-events: auto;
+        }
+
+        .global-loading-message {
+            position: relative;
+            z-index: 1;
+            margin-top: 6px;
+            padding: 4px 10px;
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
         }
 
         /* ========================================================= */
@@ -1112,6 +1281,25 @@
                 border-bottom-color: var(--color-border);
             }
 
+            tool-bar button,
+            tool-bar .btn {
+                background: transparent;
+                border-color: transparent;
+                color: var(--color-text-base);
+            }
+
+            tool-bar button:hover,
+            tool-bar .btn:hover {
+                background: rgba(255, 255, 255, 0.55);
+                border-color: var(--color-border);
+            }
+
+            tool-bar button:active,
+            tool-bar .btn:active {
+                background: rgba(0, 0, 0, 0.08);
+                box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.35);
+            }
+
             tool-item:hover,
             tool-item[aria-expanded="true"] {
                 background: rgba(255, 255, 255, 0.6);
@@ -1149,9 +1337,35 @@
                 color: var(--color-text-base);
             }
 
+            status-bar button,
+            status-bar .btn {
+                background: transparent;
+                border-color: transparent;
+                color: var(--color-text-base);
+            }
+
+            status-bar button:hover,
+            status-bar .btn:hover {
+                background: rgba(255, 255, 255, 0.55);
+                border-color: var(--color-border);
+            }
+
             tree-view {
                 background: var(--color-bg-elevated);
                 color: var(--color-text-base);
+            }
+
+            tree-view ul ul {
+                border-left: 1px dotted #808080;
+            }
+
+            tree-view li::before {
+                border-top-color: #808080;
+            }
+
+            tree-view li.tree-branch::after {
+                border-color: #808080;
+                color: #000000;
             }
 
             tree-view li:hover {
@@ -1171,6 +1385,35 @@
             tab-view [role="tab"][aria-selected="true"] {
                 background: var(--color-bg-elevated);
                 color: var(--color-primary);
+            }
+
+            switch-control::before {
+                border-color: var(--color-border);
+                background: #ffffff;
+            }
+
+            switch-control::after {
+                border-color: var(--color-border);
+            }
+
+            switch-control[aria-checked="true"]::before {
+                background: linear-gradient(90deg, var(--color-primary) 0 50%, #ffffff 50% 100%);
+            }
+
+            segment-control {
+                background: var(--color-bg-surface);
+                border-color: var(--color-border);
+            }
+
+            segment-option {
+                border-right-color: var(--color-border);
+                color: var(--color-text-base);
+            }
+
+            segment-option[selected],
+            segment-option[aria-selected="true"] {
+                background: var(--color-primary);
+                color: white;
             }
 
             .fieldset {
@@ -1206,9 +1449,14 @@
             }
 
             .global-loading-overlay {
+                border-bottom-color: #000;
+            }
+
+            .global-loading-message {
                 background: #ffffe1;
                 color: #000;
-                border-bottom-color: #000;
+                border-color: #000;
+                box-shadow: var(--shadow-sm);
             }
 
             dialog {
@@ -1220,6 +1468,18 @@
             .dialog-header {
                 background: var(--color-window-title);
                 color: white;
+            }
+
+            .dialog-header .dialog-close {
+                background: var(--color-bg-surface);
+                color: #000;
+                border-color: #fff #808080 #808080 #fff;
+                box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.8);
+            }
+
+            .dialog-header .dialog-close:active {
+                border-color: #808080 #fff #fff #808080;
+                box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.35);
             }
 
             .dialog-body {
@@ -1383,7 +1643,7 @@
                     <legend class="legend">应用管理</legend>
                     <input type="text" id="app-manage-search" class="input" placeholder="输入名称或描述以搜索已安装的应用..."
                         oninput="UIManager.renderAppManagementList(this.value)">
-                    <div id="app-management-list" class="flex-col scroll-area scroll-area-lg">
+                    <div id="app-management-list" class="flex-col scroll-area">
                     </div>
                 </fieldset>
             </div>
@@ -1453,6 +1713,9 @@
             // [核心] 快照净化器：抹除所有的 Blob URL，只留干净的 DOM 结构给 AI 和存储
             getPurifiedHTML: (container) => {
                 const clone = container.cloneNode(true);
+                clone.querySelectorAll('[data-runtime-bound]').forEach(node => {
+                    node.removeAttribute('data-runtime-bound');
+                });
                 const images = clone.querySelectorAll('img');
                 images.forEach(img => {
                     if (img.hasAttribute('data-prompt') || img.hasAttribute('data-failed-prompt')) {
@@ -1617,11 +1880,14 @@
                     { tag: 'textarea', classes: ['.textarea'], desc: '多行文本输入框' },
                     { tag: 'select', classes: ['.select'], desc: '下拉选择框' },
                     { tag: 'label', classes: ['.label'], desc: '表单标签' },
+                    { tag: 'fieldset', classes: ['.fieldset'], desc: '表单、设置、筛选分组容器' },
+                    { tag: 'legend', classes: ['.legend'], desc: 'fieldset 分组标题' },
                     { tag: 'tool-bar', classes: [], desc: '应用顶部工具栏/菜单栏，位于 app-layout 外，可包含 button、tool-item' },
                     { tag: 'tool-item', classes: [], desc: '工具栏下拉菜单项，可包含 tool-popup' },
                     { tag: 'tool-popup', classes: [], desc: 'tool-item 内部下拉菜单容器，展开/关闭由系统预置行为处理' },
                     { tag: 'tool-row', classes: [], desc: '下拉菜单命令行，可点击，必须有唯一 id' },
                     { tag: 'tool-divider', classes: [], desc: '下拉菜单分隔线，无外边距' },
+                    { tag: 'tool-spacer', classes: [], desc: '工具栏弹性占位，替代 <div style="flex:1"> 分隔左右工具区' },
                     { tag: 'app-layout', classes: [], desc: '应用主内容区，位于 tool-bar 与 status-bar 之间，预置 flex:1、纵向布局和 overflow hidden' },
                     { tag: 'split-view', classes: [], desc: '分栏布局容器，可用 direction="vertical" 表示上下分栏' },
                     { tag: 'side-panel', classes: [], desc: '侧边栏/导航树容器' },
@@ -1629,8 +1895,12 @@
                     { tag: 'status-field', classes: [], desc: '状态栏字段' },
                     { tag: 'tree-view', classes: [], desc: '树状菜单，展开/折叠由系统预置行为处理' },
                     { tag: 'tab-view', classes: [], desc: '标签页容器，支持 role=tablist/tab/tabpanel 自动切换' },
+                    { tag: 'switch-control', classes: [], desc: '开关控件，使用 aria-checked 表示状态，变更只缓冲操作' },
+                    { tag: 'segment-control', classes: [], desc: '分段选择器，内含 segment-option，切换只更新本地状态' },
+                    { tag: 'segment-option', classes: [], desc: 'segment-control 的单个选项，使用 value/selected' },
                     { tag: 'dialog', classes: [], desc: '应用内弹窗，系统会自动打开并处理底部确认/取消行为' },
                     { tag: 'ul/ol/div', classes: ['.list'], desc: '列表外层容器' },
+                    { tag: 'div', classes: ['.scroll-area', '.scroll-area-lg'], desc: '滚动面板，不自带高度限制，需要时由布局容器控制空间' },
                     { tag: 'li/div', classes: ['.list-item', '.list-item-bordered'], desc: '列表项（带边框修饰）' },
                     { tag: 'div', classes: ['.card'], desc: '独立卡片容器' },
                     { tag: 'hr/div', classes: ['.divider'], desc: '分割线' },
@@ -1640,7 +1910,6 @@
                     { tag: 'span/div', classes: ['.badge'], desc: '提示徽章/小标签' },
                     { tag: 'img', classes: ['.img', '.img-round'], desc: '图片（img-round用于圆形图片）' },
                     { tag: 'progress', classes: ['.progress'], desc: '进度条' },
-                    { tag: 'div', classes: ['.scroll-area', '.scroll-area-lg'], desc: '带内部滚动条的容器面板' },
                     { tag: 'div', classes: ['.status-panel'], desc: '居中的状态或空数据提示面板' }
                 ],
                 allowedThemeTokens: [
@@ -1678,6 +1947,7 @@
                     { selector: 'tool-popup', desc: '工具栏下拉菜单' },
                     { selector: 'tool-row', desc: '工具栏下拉菜单命令行' },
                     { selector: 'tool-divider', desc: '工具栏下拉菜单分隔线' },
+                    { selector: 'tool-spacer', desc: '工具栏弹性占位' },
                     { selector: 'app-layout', desc: 'AI应用主内容区' },
                     { selector: 'split-view', desc: 'AI应用分栏布局' },
                     { selector: 'side-panel', desc: 'AI应用侧边栏' },
@@ -1685,6 +1955,9 @@
                     { selector: 'status-field', desc: 'AI应用状态栏字段' },
                     { selector: 'tree-view', desc: 'AI应用树状菜单' },
                     { selector: 'tab-view', desc: 'AI应用标签页容器' },
+                    { selector: 'switch-control', desc: 'AI应用开关控件' },
+                    { selector: 'segment-control', desc: 'AI应用分段选择器' },
+                    { selector: 'segment-option', desc: 'AI应用分段选择项' },
                     { selector: '.scroll-area', desc: '带有内滚动的面板容器' },
                     { selector: '.status-panel', desc: '系统状态/空状态文本框' },
                     { selector: '.list-item-bordered', desc: '带边框的独立列表项/搜索结果卡片' },
@@ -2141,16 +2414,33 @@ tool-popup { background: var(--color-bg-elevated); border-color: var(--color-bor
 tool-row { color: var(--color-text-base); }
 tool-row:hover { background: var(--color-primary); color: white; }
 tool-divider { background: var(--color-border); opacity: 0.5; }
+tool-spacer { min-width: var(--space-sm); }
+tool-bar button, tool-bar .btn { background: transparent; border-color: transparent; color: var(--color-text-base); }
+tool-bar button:hover, tool-bar .btn:hover { background: rgba(255, 255, 255, 0.55); border-color: var(--color-border); }
+tool-bar button:active, tool-bar .btn:active { background: rgba(0, 0, 0, 0.08); box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.35); }
 side-panel { background: #ffffff; border-right-color: var(--color-border); }
 status-bar { background: var(--color-bg-surface); border-top-color: #ffffff; box-shadow: 0 -1px 0 var(--color-border); color: var(--color-text-base); }
+status-bar button, status-bar .btn { background: transparent; border-color: transparent; color: var(--color-text-base); }
+status-bar button:hover, status-bar .btn:hover { background: rgba(255, 255, 255, 0.55); border-color: var(--color-border); }
 tree-view { background: var(--color-bg-elevated); color: var(--color-text-base); }
+tree-view ul ul { border-left: 1px dotted #808080; }
+tree-view li::before { border-top-color: #808080; }
+tree-view li.tree-branch::after { border-color: #808080; color: #000000; }
 tree-view li:hover { background: rgba(0, 88, 230, 0.12); }
 tab-view [role="tablist"] { border-bottom-color: var(--color-border); }
 tab-view [role="tab"] { background: var(--color-bg-surface); border-color: var(--color-border); color: var(--color-text-base); }
 tab-view [role="tab"][aria-selected="true"] { background: var(--color-bg-elevated); color: var(--color-primary); }
+switch-control::before { border-color: var(--color-border); }
+switch-control::after { border-color: var(--color-border); }
+switch-control[aria-checked="true"]::before { background: linear-gradient(90deg, var(--color-primary) 0 50%, #ffffff 50% 100%); }
+segment-control { background: var(--color-bg-surface); border-color: var(--color-border); }
+segment-option { border-right-color: var(--color-border); color: var(--color-text-base); }
+segment-option[selected], segment-option[aria-selected="true"] { background: var(--color-primary); color: white; }
 .global-loading-overlay { background: #ffffe1; color: #000; border-bottom-color: #000; }
 dialog { background: var(--color-bg-surface); border: 3px solid var(--color-primary); color: var(--color-text-base); }
 .dialog-header { background: var(--color-window-title); color: white; }
+.dialog-header .dialog-close { background: var(--color-bg-surface); color: #000; border-color: #fff #808080 #808080 #fff; box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.8); }
+.dialog-header .dialog-close:active { border-color: #808080 #fff #fff #808080; box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.35); }
 .dialog-body { background: var(--color-bg-elevated); color: var(--color-text-base); }
 .dialog-footer { background: var(--color-bg-surface); border-top-color: var(--color-border); }`,
 
@@ -2589,16 +2879,12 @@ ${selectorsPrompt}
          * 模块 7: 提示词工厂 (Prompt Builder)
          */
         const PromptBuilder = {
-            buildSystemPrompt(appId) {
+            _getPromptContext(appId) {
                 const appMeta = ContextStore.registry[appId] || Config.System.systemApps[appId];
                 const history = ContextStore.getSessionString(appId);
                 const memoryBlock = MemoryManager.longTermMemory.length > 0
                     ? `[长期记忆]\n${MemoryManager.longTermMemory.join('\n')}` : '';
                 const settingsBlock = SettingsManager.getCombinedSettingString();
-
-                const isColdStart = !history || history.trim() === '';
-                const actionDesc = isColdStart ? '初始化 UI 界面' : '更新 UI 界面';
-
                 const allowedComponentsStr = Config.System.allowedUIClasses
                     .map(item => {
                         const classText = item.classes && item.classes.length ? `，可用类名 ${item.classes.join(', ')}` : '';
@@ -2606,29 +2892,74 @@ ${selectorsPrompt}
                     })
                     .join('\n');
 
+                return { appMeta, history, memoryBlock, settingsBlock, allowedComponentsStr };
+            },
+
+            buildCommonUIPrompt(appId) {
+                const { appMeta, settingsBlock, memoryBlock, allowedComponentsStr } = this._getPromptContext(appId);
+
                 return `${settingsBlock ? settingsBlock + '\n\n' : ''}[当前应用]
 应用名称：${appMeta ? appMeta.name : 'Unknown'}
 应用描述：${appMeta ? appMeta.description : 'Unknown'}
 应用主容器 ID：content-${appId}
 容器物理环境：这是一个原生具有 "display: flex; flex-direction: column; overflow: hidden; padding: 0;" 属性的刚性无边距画板。
 
-${!isColdStart ? `[历史上下文]\n${history}\n\n` : ''}${memoryBlock ? memoryBlock + '\n\n' : ''}[关键指令]
-你在为一个操作系统中的应用${actionDesc}。
+${memoryBlock ? memoryBlock + '\n\n' : ''}[通用 UI 生成规范]
 你可以且仅可以使用以下 HTML 标签及预设 CSS 类名构建 UI：
 ${allowedComponentsStr}
 
 遵守下述规则：
 1. 仅输出 HTML，不要有任何对话文本、Markdown 代码块（如 \`\`\`html）或心理活动。
-2. ${isColdStart ? '仅输出主窗口内容的内部 HTML，内容尽可能丰富。不要生成任何登录、注册或加载中的界面，假设用户已经登录。首屏推荐且优先使用如下应用结构：<tool-bar id="...">...</tool-bar><app-layout id="...">...</app-layout><status-bar id="...">...</status-bar>。tool-bar 和 status-bar 是应用外壳，必须位于 app-layout 外；app-layout 是主内容区，系统已预置 flex:1、纵向布局和 overflow hidden，不要用普通 div 加长串 style 代替 app-layout。' : '识别因用户动作而需要更新的最深层 DOM 节点，返回的HTML是这个节点的Diff，系统会自动处理。默认只更新 <app-layout> 内与动作相关的最深层带 ID 元素；除非用户动作明确改变工具栏或状态栏，否则不要返回 tool-bar/status-bar 或整个页面结构。该节点及其未改变的子节点的ID需与快照中保持一致。'}
-3. 实体控件（按钮、输入框、下拉框、文本框、图片、进度条、菜单行、状态字段等）不负责外边距；间距、分栏、滚动、对齐交给外层容器处理。
-4. 允许使用内联 style 处理局部布局、空间和滚动。允许属性：display、flex、flex-direction、gap、grid-template-*、grid-column/row、align-*、justify-*、padding、margin、width、height、min/max-width/height、overflow、box-sizing、order。禁止内联修改视觉主题或层级：color、background、border-color、box-shadow、font-family、border-radius、z-index、position:absolute/fixed、动画、滤镜。
-5. 可交互元素、会变化元素、图片、以及未来可能作为 Diff 替换目标的容器必须具备唯一 'id' 属性${isColdStart ? '。纯展示叶子节点可以没有 id。' : '；如果替换的HTML包含原有元素，更新后这些元素的 id 等属性不能修改。'}
-6. 如果需要弹窗，输出普通 <dialog id="...">，内部使用 .dialog-header、.dialog-body、.dialog-footer 组织结构；AI 不需要写任何 data-dialog-scope。dialog-footer 中的确认/应用按钮会触发一次界面更新，取消/关闭按钮只关闭弹窗。
-7. 如果需要展示图像，格式必须为：<img id="unique-img-id" class="img" data-prompt="图片描述" src="">。将 src 留空，系统将拦截它并自动填充图像。图片描述为：${ImageService.getCurrentInstruction()}${!isColdStart ? '\n8. 如果原有图片在更新后内容不变（如图片点击展开大图、创建副本等），则id、属性和更新前的原图保持一致；如果内容发生变化，则图片id和描述都需要进行修改。' : ''}`;
+2. 实体控件（按钮、输入框、下拉框、文本框、图片、进度条、菜单行、状态字段等）不负责外边距；间距、分栏、滚动、对齐交给外层容器处理。button/input/select/textarea 本体不要写 padding、margin、color、font-size、background、cursor 等内联样式。
+3. 允许使用内联 style 处理局部布局、空间和滚动。允许属性：display、flex、flex-direction、gap、grid-template-*、grid-column/row、align-*、justify-*、padding、margin、width、height、min/max-width/height、overflow、box-sizing、order。禁止内联修改视觉主题或层级：color、background、border-color、box-shadow、font-family、font-size、line-height、border-radius、z-index、position:absolute/fixed、动画、滤镜。cursor 只允许按第 4 条用于非原生可点击内容元素。
+4. 元素需要被后续引用、缓存、上报动作或局部更新时必须有唯一 'id' 属性；纯展示叶子节点可以没有 id。原生命令控件带 id 即可点击；图片 img 带 id 即可点击；其他非原生内容元素只有在需要用户点击时才写 cursor:pointer，并且必须有 id。不要给纯容器、状态文本或不可点击展示元素写 cursor:pointer。会变化的局部区域应预留稳定 id。
+5. tool-bar 中的下拉菜单标题直接写在 tool-item 文本里，不要再包 button；左右工具区分隔使用 <tool-spacer>。tool-bar 内按钮只写 .btn，不要写 btn-primary，工具栏视觉由系统处理。
+6. tree-view 必须使用 ul/li 树结构；有子级的节点由系统展开/折叠，叶子节点可作为导航命令触发更新。
+7. 滚动区域可使用 .scroll-area；该类不自带高度限制，空间由外层布局或必要的布局 style 控制。顶部区域使用 tool-bar，底部信息使用 status-bar。
+8. tab-view 中每个 tab 都必须有对应的 role="tabpanel" 内容；写 aria-controls。切换标签页由系统本地处理。不要给非默认 panel 写 display:none，系统会自动隐藏。
+9. 表单控件（checkbox、radio、select、switch-control、segment-control 等）变更只记录状态；涉及筛选、提交、应用设置时，必须同时提供明确的按钮或 Enter 输入路径承接用户意图。
+10. 如果需要弹窗，输出普通 <dialog id="...">，内部使用 .dialog-header、.dialog-body、.dialog-footer 组织结构。dialog 必须提供关闭或取消按钮；dialog-footer 中的确认/应用按钮表示提交弹窗内容，取消/关闭按钮只关闭弹窗。
+11. 图片使用 <img id="unique-img-id" class="img" data-prompt="图片描述" src="">。但不要滥用，图标、favicon、文件夹、工具按钮、快捷方式图标优先用 emoji、文字、badge 或普通按钮，而不是图片。图片描述为：${ImageService.getCurrentInstruction()}`;
+            },
+
+            buildCreateSystemPrompt(appId) {
+                return `${this.buildCommonUIPrompt(appId)}
+
+[新界面生成任务]
+你在为一个操作系统中的应用初始化 UI 界面。
+仅输出主窗口内容的内部 HTML，内容尽可能丰富。不要生成任何登录、注册或加载中的界面，假设用户已经登录。
+首屏必须优先使用如下应用结构：<tool-bar id="...">...</tool-bar><app-layout id="...">...</app-layout><status-bar id="...">...</status-bar>。
+tool-bar 和 status-bar 是应用外壳，必须位于 app-layout 外；app-layout 是主内容区，系统已预置 flex:1、纵向布局和 overflow hidden，不要用普通 div 代替 app-layout。
+为了后续交互、缓存和局部更新，需要给可点击元素、图片、表单控件、会变化的局部区域和主要内容容器设置稳定 id。`;
+            },
+
+            buildUpdateSystemPrompt(appId) {
+                const { history } = this._getPromptContext(appId);
+
+                return `${this.buildCommonUIPrompt(appId)}
+
+${history && history.trim() ? `[历史上下文]\n${history}\n\n` : ''}[界面更新任务]
+你在为一个操作系统中的应用更新 UI 界面。
+用户消息会提供 [当前 UI 快照] 和 [用户动作]。你必须根据动作后果返回一个或多个可被系统 patch 的 HTML 节点。
+更新规则：
+1. 每个返回的顶层节点都必须有 id，且该 id 必须能在当前应用窗口内容中匹配；不要返回整个 content-${appId} 容器。
+2. 默认只更新 <app-layout> 内与动作相关的最深层变化区域；如果动作明确改变 tool-bar 或 status-bar，才返回对应外壳节点。
+3. 返回节点及其未变化子节点的 id 和关键属性必须与快照保持一致；不要为了重绘而改名。
+4. 如果动作只是打开新 AI 弹窗，可以只返回新增的 <dialog id="..."> 节点。
+5. tab 切换、tree 分支展开/折叠、表单字段普通变更、switch-control/segment-control 本地切换属于系统本地行为；除非用户动作是确认、提交、Enter 输入或进入树叶子等业务命令，否则不要主动重绘。
+6. 如果原有图片在更新后内容不变，则保持原 id 和 data-prompt；如果图片内容发生变化，则修改图片 id 或 data-prompt。
+7. 不要返回无关结构，不要为了小变化替换整页。`;
+            },
+
+            buildSystemPrompt(appId) {
+                const history = ContextStore.getSessionString(appId);
+                return !history || history.trim() === ''
+                    ? this.buildCreateSystemPrompt(appId)
+                    : this.buildUpdateSystemPrompt(appId);
             },
 
             buildUserPrompt(domSnapshot, actionSequence) {
-                return `[当前 UI 快照]\n${domSnapshot}\n\n[用户动作]\n${JSON.stringify(actionSequence, null, 2)}\n\n分析这组动作的逻辑后果。输出代表更新后 UI 状态的精确 HTML 节点（必须保留其原始 ID）。`;
+                return `[当前 UI 快照]\n${domSnapshot}\n\n[用户动作]\n${JSON.stringify(actionSequence, null, 2)}\n\n分析这组动作的逻辑后果。只输出一个或多个可被系统 patch 的精确 HTML 节点；每个顶层节点必须带有当前快照中可匹配的 id，新增 dialog 除外。`;
             }
         };
 
@@ -2644,6 +2975,7 @@ ${allowedComponentsStr}
                 this._initToolbars(container);
                 this._initTreeViews(container);
                 this._initTabViews(container);
+                this._initChoiceControls(container);
                 this._initDialogs(container);
             },
 
@@ -2696,8 +3028,10 @@ ${allowedComponentsStr}
                     node.dataset.runtimeBound = 'true';
                     const nested = node.querySelector(':scope > ul, :scope > tree-view');
                     if (!nested) return;
+                    node.classList.add('tree-branch');
                     node.addEventListener('click', (e) => {
-                        if (e.target !== node && e.target.closest('button, input, select, textarea, a, tool-row')) return;
+                        if (e.target.closest('li') !== node) return;
+                        if (e.target.closest('button, input, select, textarea, a, tool-row')) return;
                         node.classList.toggle('collapsed');
                         e.stopPropagation();
                     });
@@ -2713,10 +3047,23 @@ ${allowedComponentsStr}
                     const panels = Array.from(tabView.querySelectorAll('[role="tabpanel"]'));
                     const activate = (tab) => {
                         const panelId = tab.getAttribute('aria-controls');
+                        if (!panelId) {
+                            console.warn('[ComponentRuntime] tab 缺少 aria-controls，已忽略切换。', tab);
+                            return;
+                        }
+                        const activePanel = panels.find(panel => panel.id === panelId);
+                        if (!activePanel) {
+                            console.warn(`[ComponentRuntime] 找不到 tab 对应的 panel: #${panelId}`, tabView);
+                            return;
+                        }
                         tabs.forEach(t => t.setAttribute('aria-selected', t === tab ? 'true' : 'false'));
                         panels.forEach(panel => {
-                            const active = panel.id && panel.id === panelId;
+                            const active = panel === activePanel;
                             panel.toggleAttribute('hidden', !active);
+                            if (active && panel.style.display === 'none') {
+                                panel.style.removeProperty('display');
+                                if (!panel.getAttribute('style')?.trim()) panel.removeAttribute('style');
+                            }
                         });
                     };
 
@@ -2733,10 +3080,108 @@ ${allowedComponentsStr}
                 });
             },
 
+            _initChoiceControls(container) {
+                container.querySelectorAll('switch-control[id]').forEach(control => {
+                    if (control.dataset.runtimeBound === 'true') return;
+                    control.dataset.runtimeBound = 'true';
+                    if (!control.hasAttribute('aria-checked')) {
+                        control.setAttribute('aria-checked', control.hasAttribute('checked') ? 'true' : 'false');
+                    }
+                    control.setAttribute('role', 'switch');
+                    control.tabIndex = control.tabIndex >= 0 ? control.tabIndex : 0;
+                    const toggle = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const checked = control.getAttribute('aria-checked') !== 'true';
+                        control.setAttribute('aria-checked', checked ? 'true' : 'false');
+                        control.toggleAttribute('checked', checked);
+                        this._recordLocalChange(control, checked);
+                    };
+                    control.addEventListener('click', toggle);
+                    control.addEventListener('keydown', (e) => {
+                        if (e.key === ' ' || e.key === 'Enter') toggle(e);
+                    });
+                });
+
+                container.querySelectorAll('segment-control[id]').forEach(control => {
+                    if (control.dataset.runtimeBound === 'true') return;
+                    control.dataset.runtimeBound = 'true';
+                    control.setAttribute('role', 'radiogroup');
+                    const options = Array.from(control.querySelectorAll('segment-option'));
+                    const selectOption = (option, shouldRecord = true) => {
+                        const value = option.getAttribute('value') || option.id || option.textContent.trim();
+                        options.forEach(item => {
+                            const selected = item === option;
+                            item.toggleAttribute('selected', selected);
+                            item.setAttribute('aria-selected', selected ? 'true' : 'false');
+                        });
+                        control.setAttribute('value', value);
+                        if (shouldRecord) this._recordLocalChange(control, value);
+                    };
+                    options.forEach(option => {
+                        option.setAttribute('role', 'radio');
+                        option.tabIndex = option.tabIndex >= 0 ? option.tabIndex : 0;
+                        option.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            selectOption(option);
+                        });
+                        option.addEventListener('keydown', (e) => {
+                            if (e.key === ' ' || e.key === 'Enter') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                selectOption(option);
+                            }
+                        });
+                    });
+                    const selected = options.find(option => option.hasAttribute('selected') || option.getAttribute('aria-selected') === 'true') || options[0];
+                    if (selected) selectOption(selected, false);
+                });
+            },
+
+            _recordLocalChange(control, value) {
+                if (typeof EventDelegator !== 'undefined' && typeof EventDelegator.recordBufferedAction === 'function') {
+                    EventDelegator.recordBufferedAction(control, { type: 'change', targetId: control.id, value });
+                }
+            },
+
+            _ensureDialogCloseControl(dialog) {
+                if (dialog.querySelector('.dialog-close, [data-dialog-action="cancel"]')) return;
+                if (!dialog.id) dialog.id = Utils.generateUUID();
+                let header = dialog.querySelector('.dialog-header');
+                if (!header) {
+                    header = document.createElement('div');
+                    header.className = 'dialog-header';
+                    const title = document.createElement('span');
+                    title.textContent = dialog.getAttribute('aria-label') || 'Dialog';
+                    header.appendChild(title);
+                    dialog.prepend(header);
+                }
+                const close = document.createElement('button');
+                close.id = `${dialog.id}-close`;
+                close.className = 'dialog-close';
+                close.type = 'button';
+                close.setAttribute('data-dialog-action', 'cancel');
+                close.textContent = 'X';
+                header.appendChild(close);
+            },
+
             _initDialogs(container) {
                 container.querySelectorAll('.window-content dialog').forEach(dialog => {
                     if (dialog.dataset.runtimeBound === 'true') return;
                     dialog.dataset.runtimeBound = 'true';
+                    this._ensureDialogCloseControl(dialog);
+
+                    dialog.addEventListener('cancel', (e) => {
+                        e.preventDefault();
+                        if (typeof EventDelegator !== 'undefined') EventDelegator._closeAppDialog(dialog);
+                    });
+
+                    dialog.addEventListener('click', (e) => {
+                        if (e.target === dialog && typeof EventDelegator !== 'undefined') {
+                            EventDelegator._closeAppDialog(dialog);
+                        }
+                    });
 
                     if (!dialog.open) {
                         try {
@@ -2773,6 +3218,7 @@ ${allowedComponentsStr}
                 }
 
                 const replacements = [];
+                const additions = [];
                 for (const newNode of newNodes) {
                     if (!newNode.id) {
                         this._notifyPatchFailure('AI 返回的更新节点缺少顶层 ID，请重试。');
@@ -2784,6 +3230,10 @@ ${allowedComponentsStr}
                     }
                     const oldNode = containerElement.querySelector(`#${CSS.escape(newNode.id)}`);
                     if (!oldNode) {
+                        if (newNode.tagName === 'DIALOG') {
+                            additions.push(newNode);
+                            continue;
+                        }
                         this._notifyPatchFailure(`找不到可匹配的更新节点 #${newNode.id}，请重试。`);
                         return false;
                     }
@@ -2791,8 +3241,9 @@ ${allowedComponentsStr}
                 }
 
                 replacements.forEach(({ oldNode, newNode }) => oldNode.replaceWith(newNode));
+                additions.forEach(newNode => containerElement.appendChild(newNode));
                 ComponentRuntime.init(containerElement);
-                return replacements.length > 0;
+                return replacements.length > 0 || additions.length > 0;
             },
 
             _notifyPatchFailure(message) {
@@ -3133,7 +3584,7 @@ ${allowedComponentsStr}
                 const domSnapshot = Utils.getPurifiedHTML(container);
                 WindowManager.showLoading(appId);
 
-                const sysPrompt = PromptBuilder.buildSystemPrompt(appId);
+                const sysPrompt = PromptBuilder.buildUpdateSystemPrompt(appId);
                 const userPrompt = PromptBuilder.buildUserPrompt(domSnapshot, actionSequence);
                 const onChunk = Config.LLM.useStreaming ? (delta, fullText) => { } : null;
 
@@ -3219,6 +3670,72 @@ ${allowedComponentsStr}
                 dialog.remove();
             },
 
+            _isTreeBranch(node) {
+                return !!node?.querySelector?.(':scope > ul, :scope > tree-view')
+                    || node?.classList?.contains('tree-branch');
+            },
+
+            _isFormField(node) {
+                if (!node?.matches) return false;
+                return node.matches('input:not([type="button"]):not([type="submit"]), select, textarea, range, [contenteditable="true"]');
+            },
+
+            _getPointerContentTarget(target) {
+                const candidate = target.closest('[id]');
+                if (!candidate || !candidate.closest('.window-content')) return null;
+                if (candidate.closest('tool-bar, status-bar, tab-view, tree-view, switch-control, segment-control')) return null;
+                if (candidate.matches('button, a, input, select, textarea, tool-row, [role="button"], img')) return null;
+                if (this._isFormField(candidate)) return null;
+                return getComputedStyle(candidate).cursor === 'pointer' ? candidate : null;
+            },
+
+            _getInteractiveTarget(e, type) {
+                const target = e.target;
+                if (!target || !target.closest) return null;
+
+                if (type === 'submit_enter') {
+                    return target.closest('input[id], textarea[id]');
+                }
+
+                const appDialog = target.closest('.window-content dialog');
+                const dialogControl = appDialog
+                    ? target.closest('button[id], [role="button"][id], .dialog-close[id], [data-dialog-action][id]')
+                    : null;
+                if (dialogControl) return dialogControl;
+
+                const toolbarMenuButton = target.closest('tool-item button');
+                if (toolbarMenuButton) return null;
+
+                const treeNode = target.closest('tree-view li[id]');
+                if (treeNode && this._isTreeBranch(treeNode)) {
+                    return null;
+                }
+                if (treeNode && treeNode.id) return treeNode;
+
+                const control = target.closest('button[id], a[id], tool-row[id], [role="button"][id], input[id]');
+                if (control) {
+                    if (control.tagName === 'INPUT' && !['button', 'submit'].includes(control.type)) {
+                        return null;
+                    }
+                    return control;
+                }
+
+                const image = target.closest('img[id]');
+                if (image) return image;
+
+                return this._getPointerContentTarget(target);
+            },
+
+            recordBufferedAction(target, log) {
+                if (!target || !target.closest) return;
+                if (target.closest('#modal-container')) return;
+                if (!target.closest('.window-content')) return;
+                const appId = this._getAppId(target);
+                if (!appId) return;
+                if (!this.actionBuffers[appId]) this.actionBuffers[appId] = [];
+                this.actionBuffers[appId].push(log);
+            },
+
             handlePassiveAction(e, type) {
                 if (e.target.closest('#modal-container')) return; // 物理隔离防火墙
                 if (!e.target.closest('.window-content')) return;
@@ -3239,7 +3756,12 @@ ${allowedComponentsStr}
                 if (!this.actionBuffers[appId]) this.actionBuffers[appId] = [];
                 const log = { type: type, targetId: target.id };
                 if (['input', 'change'].includes(type)) {
-                    log.value = target.type === 'checkbox' ? target.checked : target.value;
+                    if (target.type === 'checkbox' || target.type === 'radio') {
+                        log.checked = target.checked;
+                        log.value = target.value;
+                    } else {
+                        log.value = target.value;
+                    }
                 }
                 this.actionBuffers[appId].push(log);
             },
@@ -3274,17 +3796,9 @@ ${allowedComponentsStr}
                     return;
                 }
 
-                const target = e.target.closest('[id]');
+                const target = this._getInteractiveTarget(e, type);
                 if (!target || target.id.startsWith('wm-') || target.id.startsWith('win-') || target.id.startsWith('content-')) {
-                    if (e.target.closest('button, input, select, textarea, a, tool-row, [role="button"]')) {
-                        NotificationCenter.show({ title: '交互失败', message: '该控件缺少可交互 ID，请重试。', type: 'warning' });
-                    }
                     return;
-                }
-
-                if (type === 'click') {
-                    const tagName = target.tagName.toUpperCase();
-                    if ((tagName === 'INPUT' && !['button', 'checkbox', 'radio', 'submit'].includes(target.type)) || tagName === 'TEXTAREA' || tagName === 'SELECT') return;
                 }
 
                 const appId = this._getAppId(target);
@@ -3405,7 +3919,7 @@ ${allowedComponentsStr}
                     const overlay = document.createElement('div');
                     overlay.className = 'global-loading-overlay';
                     overlay.id = `loading-${appId}`;
-                    overlay.innerText = 'VibeOS 正在生成 UI...';
+                    overlay.innerHTML = '<div class="global-loading-message">VibeOS 正在生成 UI...</div>';
                     win.appendChild(overlay);
                 }
             },
@@ -3585,31 +4099,12 @@ ${allowedComponentsStr}
             _coldStartApp(appId, meta) {
                 WindowManager.createWindow(appId, meta.name, `<div id="root-${appId}" class="status-panel">正在为 ${meta.name} 初始化界面...</div>`, meta.icon);
 
-                const sysPrompt = PromptBuilder.buildSystemPrompt(appId);
+                const sysPrompt = PromptBuilder.buildCreateSystemPrompt(appId);
 
                 AIScheduler.enqueueText(() => {
                     return new Promise((resolve) => {
-                        let previewTimer = null;
-                        let previewHTML = '';
-                        const container = document.getElementById(`content-${appId}`);
-                        const onChunk = Config.LLM.useStreaming && container ? (delta, fullText) => {
-                            previewHTML = fullText || previewHTML + delta;
-                            if (previewTimer) return;
-                            previewTimer = setTimeout(() => {
-                                previewTimer = null;
-                                const liveContainer = document.getElementById(`content-${appId}`);
-                                if (liveContainer && previewHTML.trim()) {
-                                    liveContainer.innerHTML = previewHTML;
-                                }
-                            }, 100);
-                        } : null;
-
-                        APIGateway.callModel(sysPrompt, "Initialize the first screen.", onChunk,
+                        APIGateway.callModel(sysPrompt, "Initialize the first screen.", null,
                             (html) => {
-                                if (previewTimer) {
-                                    clearTimeout(previewTimer);
-                                    previewTimer = null;
-                                }
                                 const container = document.getElementById(`content-${appId}`);
                                 if (container) {
                                     const applied = DOMPatcher.applyPatch(container, html, {
@@ -3632,10 +4127,6 @@ ${allowedComponentsStr}
                                 resolve();
                             },
                             (err) => {
-                                if (previewTimer) {
-                                    clearTimeout(previewTimer);
-                                    previewTimer = null;
-                                }
                                 NotificationCenter.show({ title: '应用初始化失败', message: err, type: 'error', duration: 8000 });
                                 resolve();
                             }
